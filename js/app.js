@@ -24,7 +24,7 @@ class App extends React.Component {
 
     lastUpdate = new Date().getTime()
 
-    let rooms = 6
+    let rooms = 4
     let dungeonArray = []
     do {
        dungeonArray = []
@@ -172,13 +172,11 @@ class App extends React.Component {
     return (
       <div>
       <h2> DUNGEON CRAWLER </h2>
-       <div id={"wrapper"} className={"wrapper"}   >
+       <div id={"wrapper"} className={"wrapper"} style={wrapperStyle}  >
       <Stage width={1800} height={1800} >
         <Layer hitGraphEnabled={false} >
           <Rect x={0} y={0} width={1800} height={1800} hitGraphEnabled={false} fillPatternImage={img} />
           <Dungeon dungeonArray={this.state.dungeonArray} />
-        </Layer>
-        <Layer>
           <Player
                   playerGraphics={this.state.playerPosition.sprite}
                   positionX={Math.round(this.state.playerPosition.locationX)}

@@ -1,5 +1,5 @@
-let maximumX = 1600; //maximum horizontal
-let maximumY = 1600; //maximum vertical
+let maximumX = 1280; //maximum horizontal
+let maximumY = 1280; //maximum vertical
 let canvasArray = [];  //want to access it everywhere
 let corrupted = false;
 
