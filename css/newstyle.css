@@ -1,0 +1,18 @@
+.wrapper {
+  border: 2px black solid;
+  margin: 0 auto;
+}
+
+
+.buttonGroup {
+  margin-top : 5px;
+  align-items: center;
+display: flex;
+justify-content: center;
+}
+
+h2{
+  align-items: center;
+display: flex;
+justify-content: center;
+}
