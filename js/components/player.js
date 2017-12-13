@@ -11,8 +11,9 @@ class Player extends React.Component {
     const differentX = this.props.positionX !== nextProps.positionX;
     const differentY = this.props.positionY !== nextProps.positionY;
     const differentDirection = this.props.direction !== nextProps.direction;
+    const differentHealth = this.props.health[0] !== nextProps.health[0]
 
-    return differentX || differentY || differentDirection
+    return differentX || differentY || differentDirection || differentHealth
   };
 
     componentWillMount = () => {  //if its mounted listen for key presses

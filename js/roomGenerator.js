@@ -76,18 +76,12 @@ placeWall = (x, y) => {
           placeRoom(1, 1, x+ 1 , y +1 , "W")
         }
 
-
-
-
-
-
-
       }
 };
 
 placeCorridors = () => {
-  let roomWidth = 3   //corridor is 3 x 3
-  let roomHeight = 3
+  let roomWidth = 2   //corridor is 3 x 3
+  let roomHeight = 2
  let room1X, room1Y
  do {
     room1X = random(minimumCoords , maximumCoords - roomWidth)
@@ -132,9 +126,6 @@ placeCorridors = () => {
 
   }
   while (room1Y !== room2Y)
-
-
-
 
 };
 

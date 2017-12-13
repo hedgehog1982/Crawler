@@ -47,7 +47,7 @@ let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {
   } else {
     for (let i = newX; i < newX + spriteWidth; i++ ){
       for(let j= newY; j < newY + spriteHeight; j++){
-        if (canvasArray[i][j] !== 1){
+        if (canvasArray[i] !== undefined && canvasArray[i][j] !== 1){
           inDungeon = false;
           break;
         }
@@ -76,7 +76,10 @@ randomDirection = (newDirection) => {
 touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person, otherPlayers) => {
   let collision = false;
   for (let i = 0; i < otherPlayers.length ; i++){  //check whold of arrayDiff except current person
-     if ( i !== person ){
+
+
+
+     if ( i !== person ){  // Person is the current number in array we are checking
    let otherWidth = otherPlayers[i].sprite.animation[otherPlayers[i].direction][2]
    let otherHeight = otherPlayers[i].sprite.animation[otherPlayers[i].direction][3]
 
@@ -84,11 +87,21 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
                 newLocationX < otherPlayers[i].locationX + otherWidth &&
                 newLocationY + spriteHeight > otherPlayers[i].locationY &&
                 newLocationY < otherPlayers[i].locationY + otherHeight){
-                  otherPlayers[i].health[0] -= 5
-                  if (otherPlayers[i].health[0] < 0){otherPlayers[i].health[0] = 0}
+                console.log("other player is ", otherPlayers[person].name)
+
+                //  (newLocationY < otherPlayers[i].locationY + otherHeight){
+                  if (otherPlayers[person].name === "player" || otherPlayers[i].name === "player"){
+                      otherPlayers[i].health[0] -= 5
+                 }
+
+
+
+                  if (otherPlayers[i].health[0] < 0){
+                    otherPlayers[i].health[0] = 0
+                  }
                     collision = true
                     break;
-                        }
+                    }
                 }
         }
 
