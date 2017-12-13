@@ -24,27 +24,42 @@ class App extends React.Component {
 
     lastUpdate = new Date().getTime()
 
-    let rooms = 4
-    let dungeonArray = []
+
+    let rooms = 6
+    let dungeonArray = dungeonArray = generateRooms(rooms,maximumX ,maximumY)
+
+    dungeonArray = generateRooms(rooms,maximumX ,maximumY)
+    console.log(dungeonArray)
+
+    let inDungeon = false
+    let selectedSprite = jake
+    let X, Y
     do {
-       dungeonArray = []
-       dungeonArray = generateRooms(rooms,1280 ,1280)  // 32 x 40 tile grid =1280 grid
-    } while (corrupted === true)
+       X = random(0, maximumX)
+       Y = random(0, maximumY)
+       console.log("generated",X,Y)
+       let spriteWidth = selectedSprite.animation.walkUp[3]
+       let spriteHeight = selectedSprite.animation.walkUp[2]
 
-    let enemyArray = genEnemyArray (dungeonArray)
+      inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
+
+    } while (inDungeon === false)
+
+    let enemies = 6
+
+    let enemyArray = genEnemyArray (dungeonArray, enemies)
     this.onClick = this.onClick.bind(this);
-
-    this.state = {
-          dungeonArray : dungeonArray,                   // x , y , width, height
-          playerPosition : {
+      this.state = {
+           dungeonArray : dungeonArray,                   // x , y , width, height
+            playerPosition : {
             name : "player",
-            locationX : dungeonArray[0].x + dungeonArray[0].width /2,
-            locationY : dungeonArray[0].y + dungeonArray[0].height /2,
+            locationX : X,
+            locationY : Y,
             direction : "walkUp",
-            sprite : jake,
+            sprite : selectedSprite,
             health : [200 , 200]
           },
-          enemyArray : enemyArray
+          enemyArray : enemyArray // enemyArray
     }
   }
 
@@ -57,7 +72,7 @@ class App extends React.Component {
   return differentX || differentY || differentDirection || arrayDiff;
 };
 
-  componentDidMount = () => {  //update position  50 times a second
+ componentDidMount = () => {  //update position  50 times a second
       this.interval = setInterval(this.updateAllPosition, 20);
   };
 
@@ -67,10 +82,10 @@ class App extends React.Component {
 
   componentWillMount = () => {  //if its mounted listen for key presses
     document.addEventListener("keydown", this.handleKeyPress)
-    this.setState({
+    //this.setState({
 
-    })
-  };
+    //})
+    };
 
   updateAllPosition = () => {  //update position --- needs speeding up
     let currentTime = new Date().getTime();
@@ -87,8 +102,9 @@ class App extends React.Component {
 
     //update scroll position
     let newPlayer = joinedArray.pop()
-    wrapper.scrollTop = newPlayer.locationY - viewport.height /2;
-    wrapper.scrollLeft = newPlayer.locationX - viewport.width / 2;
+    let wrapper = document.getElementById("wrapper")
+          wrapper.scrollTop = Math.round(newPlayer.locationY - viewport.height /2);  //round to smooth movement?
+          wrapper.scrollLeft = Math.round(newPlayer.locationX - viewport.width / 2);
 
     //remove dead players (eventually check player is dead?)
     let cleanedArray = []
@@ -143,6 +159,10 @@ class App extends React.Component {
     })
   };
 
+  componentDidUpdate(oldProps, oldState) {
+
+};
+
 
   render() {
     let enemyArray = this.state.enemyArray
@@ -151,10 +171,9 @@ class App extends React.Component {
                         overflow : "hidden"
                         }
 
-  let img = document.createElement('img'); // use DOM HTMLImageElement
-      img.src = 'sprite/lava.jpg';
-      enemyDisplay =[]
-  let enemyDisplay = enemyArray.map((enemy , key) => {
+
+     enemyDisplay =[]
+     let enemyDisplay = enemyArray.map((enemy , key) => {
 
          return(
 
@@ -168,8 +187,40 @@ class App extends React.Component {
 
        )
        });
-       //style={wrapperStyle}
-    return (
+
+
+      return (
+        <div>
+        <h2> DUNGEON CRAWLER </h2>
+         <div id={"wrapper"} className={"wrapper"} style={wrapperStyle} >
+        <Stage className={"wrapper"} width={maximumX} height={maximumY} >
+            <Layer>
+            <Dungeon dungeonArray={this.state.dungeonArray} />
+
+            <Player
+                      playerGraphics={this.state.playerPosition.sprite}
+                      positionX={Math.round(this.state.playerPosition.locationX)}
+                      positionY={Math.round(this.state.playerPosition.locationY)}
+                      direction={this.state.playerPosition.direction}
+                      health={this.state.playerPosition.health}
+              />
+                    {enemyDisplay}
+          </Layer>
+        </Stage>
+        </div>
+        <div>
+          <button onClick={this.onClick} id="walkUp">UP</button>
+           <button onClick={this.onClick} id="walkDown">DOWN</button>
+           <button onClick={this.onClick} id="walkLeft">LEFT</button>
+           <button onClick={this.onClick} id="walkRight">RIGHT</button>
+         </div>
+      </div>
+
+    )}
+
+
+
+  /*  return (
       <div>
       <h2> DUNGEON CRAWLER </h2>
        <div id={"wrapper"} className={"wrapper"} style={wrapperStyle}  >
@@ -199,7 +250,7 @@ class App extends React.Component {
     </div>
 
 
-  )}
+  )} */
 
 };
 

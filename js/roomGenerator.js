@@ -1,178 +1,202 @@
-let maximumX = 1280; //maximum horizontal
-let maximumY = 1280; //maximum vertical
-let canvasArray = [];  //want to access it everywhere
+let maximumX = 1920; //maximum horizontal
+let maximumY = 1920; //maximum vertical
+let canvasArray = [];  //want to access it everywhere. this is for collision differentDirection
+let tileArray =[]; // this is for the dungeon to be displayed
 let corrupted = false;
+let tileSize = 32
+const minimumCoords = 1 //to allow wall tile
+const maximumCoords = (maximumX / tileSize) -1  //to allow wall tiles
 
 random = (min, max) => {
 return Math.floor(Math.random()*(max-min+1)+min);
-}
-
-addRoomCanvas = (roomObject) => {   //{"x" : 0, "y" : 0 , "width" : 400, "height": 400}
-  let previousTime = JSON.stringify(new Date().getTime());
-  for (let x = roomObject.x; x < (roomObject.x + roomObject.width); x++){
-    for (let y = roomObject.y; y < (roomObject.y + roomObject.height); y++){
-        canvasArray[x][y] = 1;
-    };
-  };
-  let currentTime = JSON.stringify(new Date().getTime());
-  console.log("time to add ", currentTime - previousTime -0)
-
 };
 
-checkOccupied = (roomObject, attempts) => {
-  console.log(roomObject, attempts)
-  let occupied = false;
-  let previousTime = JSON.stringify(new Date().getTime());
-  for (let x = roomObject.x + 3; x < (roomObject.x + roomObject.width)- 1; x++){
-    for (let y = roomObject.y + 3; y < (roomObject.y + roomObject.height) -1; y++){
-        if (canvasArray[x][y] ===1){
-          occupied = true
+populateCanvasArray = () => {
+
+  for (let x = 0; x < tileArray.length; x++) { //go through each of position in tile array
+    for (let y = 0; y < tileArray[0].length; y++) {
+
+      if (tileArray[x][y] === "R" || tileArray[x][y] === "C") { //if it is a corridor or a room then put a corresponding 1 in canvasArray chunk (tile size squared)
+        for (let canvasX = x * tileSize; canvasX < (x + 1) * tileSize; canvasX++) {
+          for (let canvasY = y * tileSize; canvasY < (y + 1) * tileSize; canvasY++) {
+            canvasArray[canvasX][canvasY] = 1;
+          }
         }
-    };
-  };
-  let currentTime = JSON.stringify(new Date().getTime());
-  console.log("time to check ", currentTime - previousTime -0)
-  if (attempts === 100) {
-    console.log("tried 10 times placing it anywhere")
-    occupied = false
-    corrupted = true
+      }
+    }
   }
- return (occupied)
-
 };
 
-room = () => {
-  let minimumRoomSize = 200;
-  let maximumRoomSize = 400;
-  let x , y, width, height
+roomOccupied = (roomWidth, roomHeight, positionX, positionY) => {
+  let occupied = false;
+  for (let x = positionX; x < positionX + roomWidth ; x++) {  // check X position from room X pos for whole of width
+    for (let y = positionY; y < positionY + roomHeight ; y++) {  // check X position from room X pos for whole of width
+      if (tileArray[x][y] === "R"){
+        occupied = true;
+      }
+    }
+  }
+  return occupied
+};
 
-  do{
+placeRoom = (roomWidth, roomHeight, positionX, positionY, letter) => {
+  for (let x = positionX; x < positionX + roomWidth ; x++) {  // check X position from room X pos for whole of width
+    for (let y = positionY; y < positionY + roomHeight ; y++) {  // check X position from room X pos for whole of width
+        tileArray[x][y] = letter
+    }
+  }
+};
+
+placeWall = (x, y) => {
+      if (tileArray[x][y] ==="R" || tileArray[x][y] ==="C")
+      {
+        if (tileArray[x-1][y] === undefined){ //place walls on sides
+          placeRoom(1, 1, x - 1, y , "W")
+        }
+        if (tileArray[x+1][y] === undefined){ //
+          placeRoom(1, 1, x + 1, y , "W")
+        }
+        if (tileArray[x][y-1] === undefined){ //
+          placeRoom(1, 1, x, y -1, "W")
+        }
+        if (tileArray[x][y+1] === undefined){ //
+          placeRoom(1, 1, x , y +1 , "W")
+        }
+
+        if (tileArray[x-1][y -1] === undefined){ //place corner walls
+          placeRoom(1, 1, x - 1, y -1 , "W")
+        }
+        if (tileArray[x-1][y +1] === undefined){ //
+          placeRoom(1, 1, x - 1, y + 1 , "W")
+        }
+        if (tileArray[x +1 ][y-1] === undefined){ //
+          placeRoom(1, 1, x + 1 , y -1, "W")
+        }
+        if (tileArray[x+ 1][y+1] === undefined){ //
+          placeRoom(1, 1, x+ 1 , y +1 , "W")
+        }
+
+
+
+
+
+
+
+      }
+};
+
+placeCorridors = () => {
+  let roomWidth = 3   //corridor is 3 x 3
+  let roomHeight = 3
+ let room1X, room1Y
+ do {
+    room1X = random(minimumCoords , maximumCoords - roomWidth)
+    room1Y = random(minimumCoords , maximumCoords - roomHeight)
+    occupied = roomOccupied(1, 1, room1X, room1Y)
+
+  }
+  while (occupied === false)
+
+  let room2X, room2Y
+
+
   do {
-    x = random(0, maximumX)   //generate random X
-    y = random(0, maximumY)
-    width = random(minimumRoomSize, maximumRoomSize )
-    height = random(minimumRoomSize, maximumRoomSize )
-  }
-  while ((x + width) > maximumX || (y + height) > maximumY)
-}
-while (checkOccupied({"x" : x, "y" : y , "width" : width, "height": height}))
-
-  return ({"x" : x, "y" : y , "width" : width, "height": height})
-};
-
-roomier = (previousRoom) => {
-  let attempts = 0
-  let minimumCorridorWidth = 250;
-  let maximumCorridorWidth = 400
-  let minimumCorridorLength = 250
-  let maximumCorridorlength = 400;
-  let x , y, width, height
-  console.log("previous Room is ",previousRoom)
-  do{
-    attempts++
-  do{
-  let direction = random(0,3)
-  if (direction == 0){  //south facing corridor
-        width = random(minimumCorridorWidth, minimumCorridorWidth )
-        height = random(minimumCorridorLength, maximumCorridorlength )
-        x = random(previousRoom.x,previousRoom.x + previousRoom.width -width ) ,
-        y =  previousRoom.y + previousRoom.height
- } else if (direction == 1) { //north facing corridor
-     width = random(minimumCorridorWidth, minimumCorridorWidth )
-     height = random(minimumCorridorLength, maximumCorridorlength )
-     x = random(previousRoom.x,previousRoom.x + previousRoom.width -width ) ,  //generate random X
-     y =  previousRoom.y -height
-   } else if (direction == 2){ //east facing corridor
-     height = random(minimumCorridorWidth, minimumCorridorWidth )
-     width = random(minimumCorridorLength, maximumCorridorlength ),
-     x = previousRoom.x + previousRoom.width ,  //generate random X
-     y = random(previousRoom.y,previousRoom.y + previousRoom.height -height)
-   } else {
-     height = random(minimumCorridorWidth, minimumCorridorWidth )
-     width = random(minimumCorridorLength, maximumCorridorlength ),
-     x = previousRoom.x - width ,  //generate random X
-     y = random(previousRoom.y,previousRoom.y + previousRoom.height -height)
+     room2X = random(minimumCoords , maximumCoords - roomWidth)
+     room2Y = random(minimumCoords , maximumCoords - roomHeight)
+     occupied = roomOccupied(1, 1, room2X, room2Y)
 
    }
- }
-    while (x + width > maximumX || y + height > maximumY || x < 0 || y < 0)
-}
-while (checkOccupied({"x" : x, "y" : y , "width" : width, "height": height}, attempts))
+   while (occupied === false)
 
-  addRoomCanvas({"x" : x, "y" : y , "width" : width, "height": height})
-  return ({"x" : x, "y" : y , "width" : width, "height": height})
-};
+  do {
+    occupied = roomOccupied(roomWidth, roomHeight, room1X, room1Y)
+        if (occupied === false){
+          placeRoom(roomWidth, roomHeight, room1X, room1Y, "C")
+        } else {
+          placeRoom(roomWidth, roomHeight, room1X, room1Y, "R")
+        }
 
-corridor = (previousRoom) => {
-let attempts = 0
-  let minimumCorridorWidth = 70;
-  let maximumCorridorWidth = 80
-  let minimumCorridorLength = 100
-  let maximumCorridorlength = 400;
-  let x , y, width, height
-  console.log("previous Room is ",previousRoom)
+    if (room1X < room2X){  //this is a riduculous bit of code???
+          room1X += 1
+    } else if (room1X > room2X){
+          room1X -= 1
+    } else {
 
-  do{
-    attempts ++
-  do{
-  let direction = random(0,3)
-  console.log("random is ", direction)
-  if (direction == 0){  //south facing corridor
-        width = random(minimumCorridorWidth, minimumCorridorWidth )
-        height = random(minimumCorridorLength, maximumCorridorlength )
-        x = random(previousRoom.x ,previousRoom.x + previousRoom.width -width ) ,
-        y =  previousRoom.y + previousRoom.height
- } else if (direction == 1) { //north facing corridor
-     width = random(minimumCorridorWidth, minimumCorridorWidth )
-     height = random(minimumCorridorLength, maximumCorridorlength )
-     x = random(previousRoom.x,previousRoom.x + previousRoom.width - width  ) ,  //generate random X
-     y =  previousRoom.y -height
-   } else if (direction == 2){ //east facing corridor
-     height = random(minimumCorridorWidth, minimumCorridorWidth )
-     width = random(minimumCorridorLength, maximumCorridorlength ),
-     x = previousRoom.x + previousRoom.width ,  //generate random X
-     y = random(previousRoom.y,previousRoom.y + previousRoom.height -height)
-   } else {
-     height = random(minimumCorridorWidth, minimumCorridorWidth )
-     width = random(minimumCorridorLength, maximumCorridorlength ),
-     x = previousRoom.x - width ,  //generate random X
-     y = random(previousRoom.y,previousRoom.y + previousRoom.height -height)
+      if  (room1Y < room2Y){
+        room1Y +=1
+      } else {
+        room1Y -=1
+      }
 
-   }
- }
-    while (x + width > maximumX || y + height > maximumY || x < 0 || y < 0)
+    }
+
   }
-  while (checkOccupied({"x" : x, "y" : y , "width" : width, "height": height},attempts))
+  while (room1Y !== room2Y)
 
-  addRoomCanvas({"x" : x, "y" : y , "width" : width, "height": height})
-  return ({"x" : x, "y" : y , "width" : width, "height": height})
+
+
+
 };
 
-generateRooms = (rooms, canvasWidth, canvasHeight) => {
-  corrupted = false;
-  canvasArray = [];
-  let currentTime = JSON.stringify(new Date().getTime());
 
-  console.log(canvasWidth, canvasHeight)
+generateRoom = () => {
+      const minimumSize = 8    // 7 tiles is 224 pixels wide
+      const maximumSize = 15//
 
-  for (let rows = 0; rows < canvasHeight ; rows++){
+
+      let occupied = true
+      let roomWidth, roomHeight, positionX, positionY;
+
+      do {
+
+      roomWidth = random(minimumSize, maximumSize)   //generate rooms between minimum and maximume
+      roomHeight = random(minimumSize, maximumSize)
+
+      positionX = random(minimumCoords , maximumCoords - roomWidth)
+      positionY = random(minimumCoords , maximumCoords - roomHeight)
+
+      occupied = roomOccupied(roomWidth, roomHeight, positionX, positionY)
+      }
+      while (occupied === true)
+
+      placeRoom(roomWidth, roomHeight, positionX, positionY, "R")
+
+};
+
+generateRooms = (rooms, canvasWidth, canvasHeight) => {  // (32 x 32 tile)  x 40 tiles across grid =1280 grid,   32 pixels per tile ...
+  canvasArray = [];  //ensure all arrays are blank if we generate a new dungeonArray
+  tileArray = []
+
+  for (let rows = 0; rows < canvasHeight; rows++){  // make a blank array for collision detection
     canvasArray.push(new Array(canvasWidth))
   }
 
-  let pastTime = JSON.stringify(new Date().getTime());
-  console.log(pastTime - currentTime - 0)
-  console.log("canvas array", canvasArray)
-  console.log(canvasArray[0].length)
+  for (let rows = 0; rows < canvasHeight / tileSize  ; rows++){  // make a blank array for collision detection
+    tileArray.push(new Array(canvasWidth / tileSize))
+  }
 
-let roomArray = [];
-//roomArray.push(room())
+  let currentTime = JSON.stringify(new Date().getTime());
 
-roomArray.push({"x" : 0, "y" : 0 , "width" : 400, "height": 400})
-addRoomCanvas(roomArray[0])
-for (let i = 0; i < rooms; i++){
-  roomArray.push(corridor(roomArray[roomArray.length -1]))
-  //roomArray.push(room())
-  roomArray.push(roomier(roomArray[roomArray.length -1]))
-}
-return (roomArray)
+  console.log(canvasWidth, canvasHeight)
+  console.log(canvasArray)
+  console.log(tileArray)
+
+  for (let i = 0; i < rooms; i++){  //generate rooms
+            generateRoom()
+  }
+
+   for (let i = 0; i < rooms ; i++){ //generate corridors
+       placeCorridors()
+   }
+
+   for (let x = 1; x < tileArray.length -1; x++) { //go through each of position in tile array
+     for (let y = 1; y < tileArray[0].length -1; y++) {
+          placeWall(x, y)
+    }
+  }
+
+
+  populateCanvasArray()
+
+return (tileArray)
 }
