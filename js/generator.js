@@ -53,13 +53,14 @@ genObjectArray = (dungeonArray, objects) => {
     inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
 
   } while (inDungeon === false)
+    let randomHealth = random(20, 50)
 
   objectArray.push({
     name : "object" + i,
     locationX : Math.round(X),   //round numbers to stop sub pixel movement
     locationY : Math.round(Y),
     img : selectedSprite,
-    health : 20,
+    health : randomHealth,
     attack : 0,
     defense : 0
   })

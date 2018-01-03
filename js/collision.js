@@ -110,3 +110,52 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
 
   return (collision)
 };
+
+let touchingItems = (player, items) => {
+  //console.log("player is ", player)
+  //console.log("items is ", items)
+  let direction = player.direction
+
+  let spriteWidth = player.sprite.animation[direction][2]
+  let spriteHeight = player.sprite.animation[direction][3]
+  let newLocationX = player.locationX
+  let newLocationY = player.locationY
+
+  for (let i = 0 ; i < items.length ; i++){  // lazy same as above> needs turning into a function
+      let otherWidth = tileSize
+      let otherHeight = tileSize
+      if (   newLocationX + spriteWidth > items[i].locationX &&
+             newLocationX < items[i].locationX + otherWidth &&
+             newLocationY + spriteHeight > items[i].locationY &&
+             newLocationY < items[i].locationY + otherHeight){
+
+              // add difference to player stats (do not go over max health)
+              // zero items value
+              player.health[0] += items[i].health
+              player.attack += items[i].attack
+              player.defense += items[i].defense
+
+              if (player.health[0] > player.health[1]) { //stop health going above max
+                player.health[0] = player.health[1]
+              }
+              items[i].attack = 0
+              items[i].defense = 0
+              items[i].health = 0
+              console.log(items[i])
+
+       }
+
+    }
+    let cleanedArray =[]
+    items.map((item) => {
+
+        if (!(item.health === 0 && item.defense === 0 && item.attack === 0)){
+          cleanedArray.push(item)
+        }
+
+        })
+
+return (cleanedArray)
+    //clean array of zero values
+
+};

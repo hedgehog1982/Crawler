@@ -104,9 +104,13 @@ class App extends React.Component {
     let timeDiff = currentTime - lastUpdate;
   //  console.log(Math.round(1000 /  (timeDiff)), "FPS")
 
+  //make duplicate of arrays so not altering directly
+  let joinedArray = JSON.parse(JSON.stringify(this.state.enemyArray))
+  let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
+  let itemArrayCopy = JSON.parse(JSON.stringify(this.state.objectArray))
+
     //check if in dungeon or touching enemy
-    let joinedArray = JSON.parse(JSON.stringify(this.state.enemyArray))
-    let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
+
     joinedArray.push(playerCopy)
     for(let person = 0; person < joinedArray.length ; person++){
           updatePos(joinedArray, person ,timeDiff)
@@ -128,10 +132,13 @@ class App extends React.Component {
 
     })
 
+    //check if touching items
+      let cleanedItem = touchingItems(newPlayer, itemArrayCopy)
+
       this.setState({
        playerPosition : newPlayer,
-       enemyArray : cleanedArray
-
+       enemyArray : cleanedArray,
+       objectArray : cleanedItem
       })
       lastUpdate = currentTime
 
@@ -182,8 +189,6 @@ class App extends React.Component {
                         height: viewport.height + "px",
                         overflow : "hidden"
                         }
-
-    console.log(this.state.objectArray[0])
 
     //generate enemy display
      enemyDisplay =[]
