@@ -36,8 +36,8 @@ let updatePos = (personArray, person, timeDiff) => {
 };
 
 let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {
-  let currentTime = JSON.stringify(new Date().getTime());
-  let TL, TR, BL, BR, inDungeon = false
+  //let currentTime = JSON.stringify(new Date().getTime());  //dont need this anymore?
+  let inDungeon = false
 
   newX = Math.round(newX)
   newY = Math.round(newY)
@@ -45,8 +45,8 @@ let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {
   if (newX < 0 ){
     return false
   } else {
-    for (let i = newX; i < newX + spriteWidth; i++ ){
-      for(let j= newY; j < newY + spriteHeight; j++){
+    for (let i = newX; i < newX + spriteWidth; i++ ){ // for width of sprite
+      for(let j= newY; j < newY + spriteHeight; j++){ //for height of sprite
         if (canvasArray[i] !== undefined && canvasArray[i][j] !== 1){
           inDungeon = false;
           break;
@@ -91,7 +91,10 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
 
                 //  (newLocationY < otherPlayers[i].locationY + otherHeight){
                   if (otherPlayers[person].name === "player" || otherPlayers[i].name === "player"){
-                      otherPlayers[i].health[0] -= 5
+                    console.log("defense is ", otherPlayers[i].defense )
+                    console.log("attack is ", (otherPlayers[person]).attack)
+                      otherPlayers[i].health[0] -=  (otherPlayers[person]).attack - otherPlayers[i].defense
+                      //at the minute this is all a bit uncomplicated.
                  }
 
 

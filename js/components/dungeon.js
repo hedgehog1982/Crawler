@@ -8,7 +8,7 @@ class Dungeon extends React.Component {
     };
 
     componentDidMount = () => {
-        this.interval = setTimeout(() => {this.layer.cache()}, 2000);
+        this.interval = setTimeout(() => {this.layer.cache()}, 500);
 
     };
 

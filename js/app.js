@@ -5,6 +5,7 @@ import React from "react"
 import ReactDOM from "react-dom"
 import {Player} from "./components/player.js"
 import {Dungeon} from "./components/dungeon.js"
+import {Items} from "./components/items.js"
 
 
 
@@ -24,13 +25,13 @@ class App extends React.Component {
 
     lastUpdate = new Date().getTime()
 
-
+    //generate dungeon
     let rooms = 6
     let dungeonArray = dungeonArray = generateRooms(rooms,maximumX ,maximumY)
-
     dungeonArray = generateRooms(rooms,maximumX ,maximumY)
     console.log(dungeonArray)
 
+    //place hero
     let inDungeon = false
     let selectedSprite = jake
     let X, Y
@@ -40,14 +41,21 @@ class App extends React.Component {
        console.log("generated",X,Y)
        let spriteWidth = selectedSprite.animation.walkUp[3]
        let spriteHeight = selectedSprite.animation.walkUp[2]
-
       inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
 
     } while (inDungeon === false)
 
+    //populate dungeon with enemies
     let enemies = 6
-
     let enemyArray = genEnemyArray (dungeonArray, enemies)
+
+    //populate power-up
+    let objects = 3
+    let objectArray = genObjectArray(dungeonArray, objects)
+
+    console.log(objectArray)
+
+
     this.onClick = this.onClick.bind(this);
       this.state = {
            dungeonArray : dungeonArray,                   // x , y , width, height
@@ -57,13 +65,17 @@ class App extends React.Component {
             locationY : Y,
             direction : "walkUp",
             sprite : selectedSprite,
-            health : [200 , 200]
+            health : [200 , 200],
+            attack : 20,
+            defense : 10
           },
-          enemyArray : enemyArray // enemyArray
+
+          enemyArray : enemyArray, // enemyArray,
+          objectArray : objectArray
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {  //Math.round(
+  shouldComponentUpdate(nextProps, nextState) {  //only update if position change whole number
   const differentX = Math.round(this.state.playerPosition.locationX) !== Math.round(nextState.playerPosition.locationX);
   const differentY = Math.round(this.state.playerPosition.locationY) !== Math.round(nextState.playerPosition.locationY);
   const differentDirection = this.state.playerPosition.direction !== nextState.playerPosition.direction;
@@ -72,7 +84,7 @@ class App extends React.Component {
   return differentX || differentY || differentDirection || arrayDiff;
 };
 
- componentDidMount = () => {  //update position  50 times a second
+ componentDidMount = () => {  //update positions  50 times a second
       this.interval = setInterval(this.updateAllPosition, 20);
   };
 
@@ -90,7 +102,7 @@ class App extends React.Component {
   updateAllPosition = () => {  //update position --- needs speeding up
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
-    console.log(Math.round(1000 /  (timeDiff)), "FPS")
+  //  console.log(Math.round(1000 /  (timeDiff)), "FPS")
 
     //check if in dungeon or touching enemy
     let joinedArray = JSON.parse(JSON.stringify(this.state.enemyArray))
@@ -171,12 +183,13 @@ class App extends React.Component {
                         overflow : "hidden"
                         }
 
+    console.log(this.state.objectArray[0])
 
+    //generate enemy display
      enemyDisplay =[]
      let enemyDisplay = enemyArray.map((enemy , key) => {
 
          return(
-
            <Player key={"Enemy" + key}
                playerGraphics={enemy.sprite}
                positionX ={Math.round(enemy.locationX)}
@@ -184,7 +197,6 @@ class App extends React.Component {
                direction={enemy.direction}
                health={enemy.health}
            />
-
        )
        });
 
@@ -196,7 +208,7 @@ class App extends React.Component {
         <Stage className={"wrapper"} width={maximumX} height={maximumY} >
             <Layer>
             <Dungeon dungeonArray={this.state.dungeonArray} />
-
+            <Items items={this.state.objectArray} />
             <Player
                       playerGraphics={this.state.playerPosition.sprite}
                       positionX={Math.round(this.state.playerPosition.locationX)}
@@ -205,8 +217,17 @@ class App extends React.Component {
                       health={this.state.playerPosition.health}
               />
                     {enemyDisplay}
+
           </Layer>
         </Stage>
+        </div>
+        <div>
+          <h6>Enemies Alive  is {enemyArray.length}</h6>
+          <h6>Attack is {this.state.playerPosition.attack} </h6>
+          <h6>Defence is {this.state.playerPosition.defense}</h6>
+          <h6>Health is {this.state.playerPosition.health[1]} / {this.state.playerPosition.health[0]} </h6>
+
+
         </div>
         <div>
           <button onClick={this.onClick} id="walkUp">UP</button>
@@ -217,40 +238,6 @@ class App extends React.Component {
       </div>
 
     )}
-
-
-
-  /*  return (
-      <div>
-      <h2> DUNGEON CRAWLER </h2>
-       <div id={"wrapper"} className={"wrapper"} style={wrapperStyle}  >
-      <Stage width={1800} height={1800} >
-        <Layer hitGraphEnabled={false} >
-          <Rect x={0} y={0} width={1800} height={1800} hitGraphEnabled={false} fillPatternImage={img} />
-          <Dungeon dungeonArray={this.state.dungeonArray} />
-          <Player
-                  playerGraphics={this.state.playerPosition.sprite}
-                  positionX={Math.round(this.state.playerPosition.locationX)}
-                  positionY={Math.round(this.state.playerPosition.locationY)}
-                  direction={this.state.playerPosition.direction}
-                  health={this.state.playerPosition.health}
-          />
-        {enemyDisplay}
-        </Layer>
-      </Stage>
-      </div>
-      <div>
-                <button onClick={this.onClick} id="walkUp">UP</button>
-                 <button onClick={this.onClick} id="walkDown">DOWN</button>
-                 <button onClick={this.onClick} id="walkLeft">LEFT</button>
-                 <button onClick={this.onClick} id="walkRight">RIGHT</button>
-
-
-      </div>
-    </div>
-
-
-  )} */
 
 };
 

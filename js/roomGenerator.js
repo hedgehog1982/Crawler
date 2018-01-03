@@ -162,11 +162,11 @@ generateRooms = (rooms, canvasWidth, canvasHeight) => {  // (32 x 32 tile)  x 40
     canvasArray.push(new Array(canvasWidth))
   }
 
-  for (let rows = 0; rows < canvasHeight / tileSize  ; rows++){  // make a blank array for collision detection
+  for (let rows = 0; rows < canvasHeight / tileSize  ; rows++){  // make a blank array for displaying tiles
     tileArray.push(new Array(canvasWidth / tileSize))
   }
 
-  let currentTime = JSON.stringify(new Date().getTime());
+  let currentTime = JSON.stringify(new Date().getTime());  // dont use this anywhere?
 
   console.log(canvasWidth, canvasHeight)
   console.log(canvasArray)
@@ -176,18 +176,19 @@ generateRooms = (rooms, canvasWidth, canvasHeight) => {  // (32 x 32 tile)  x 40
             generateRoom()
   }
 
-   for (let i = 0; i < rooms ; i++){ //generate corridors
+   for (let i = 0; i < rooms ; i++){ //generate corridors  // does not guarantee a corridor to every rooms
+        //i think i should keep track of all room sizes. then see if i can generate a corridor to every other room     
        placeCorridors()
    }
 
-   for (let x = 1; x < tileArray.length -1; x++) { //go through each of position in tile array
+   for (let x = 1; x < tileArray.length -1; x++) { //go through each of position in tile array and place walls.
      for (let y = 1; y < tileArray[0].length -1; y++) {
           placeWall(x, y)
     }
   }
 
 
-  populateCanvasArray()
+  populateCanvasArray()  //update canvas array for collision detection
 
 return (tileArray)
 }
