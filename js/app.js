@@ -7,6 +7,36 @@ import {Player} from "./components/player.js"
 import {Dungeon} from "./components/dungeon.js"
 import {Items} from "./components/items.js"
 
+class EnemyDisplay extends React.Component {
+constructor(props) {
+  super(props)
+}
+render () {
+  //generate enemy display
+  let enemyArray = this.props.enemyArray
+   enemyDisplay =[]
+   let enemyDisplay = enemyArray.map((enemy , key) => {
+
+       return(
+         <Player key={"Enemy" + key}
+             playerGraphics={enemy.sprite}
+             positionX ={Math.round(enemy.locationX)}
+             positionY={Math.round(enemy.locationY)}
+             direction={enemy.direction}
+             health={enemy.health}
+         />
+     )
+     });
+
+return (
+  <Group>
+        {enemyDisplay}
+  </Group>
+
+
+)}
+};
+
 
 
 class App extends React.Component {
@@ -184,50 +214,54 @@ class App extends React.Component {
 
 
   render() {
-    let enemyArray = this.state.enemyArray
+
     let wrapperStyle ={ width : viewport.width + "px",
                         height: viewport.height + "px",
                         overflow : "hidden"
                         }
 
-    //generate enemy display
-     enemyDisplay =[]
-     let enemyDisplay = enemyArray.map((enemy , key) => {
 
-         return(
-           <Player key={"Enemy" + key}
-               playerGraphics={enemy.sprite}
-               positionX ={Math.round(enemy.locationX)}
-               positionY={Math.round(enemy.locationY)}
-               direction={enemy.direction}
-               health={enemy.health}
-           />
-       )
-       });
+       let won = null
+       if (this.state.enemyArray.length === 0 && this.state.playerPosition.health[0] !==0){
+         won = (
+           <div>
+              WON!
+           </div>
+         )
+       } else if (this.state.playerPosition.health[0] === 0){
+         won = (
+           <div>
+              LOST!
+           </div>
+         )
+       } else {
+         won =
+           <Stage className={"wrapper"} width={maximumX} height={maximumY} >
+               <Layer>
+               <Dungeon dungeonArray={this.state.dungeonArray} />
+               <Items items={this.state.objectArray} />
+               <Player
+                         playerGraphics={this.state.playerPosition.sprite}
+                         positionX={Math.round(this.state.playerPosition.locationX)}
+                         positionY={Math.round(this.state.playerPosition.locationY)}
+                         direction={this.state.playerPosition.direction}
+                         health={this.state.playerPosition.health}
+                 />
+               <EnemyDisplay enemyArray={this.state.enemyArray} />
 
+             </Layer>
+           </Stage>
+
+       }
 
       return (
         <div>
         <h2> DUNGEON CRAWLER </h2>
          <div id={"wrapper"} className={"wrapper"} style={wrapperStyle} >
-        <Stage className={"wrapper"} width={maximumX} height={maximumY} >
-            <Layer>
-            <Dungeon dungeonArray={this.state.dungeonArray} />
-            <Items items={this.state.objectArray} />
-            <Player
-                      playerGraphics={this.state.playerPosition.sprite}
-                      positionX={Math.round(this.state.playerPosition.locationX)}
-                      positionY={Math.round(this.state.playerPosition.locationY)}
-                      direction={this.state.playerPosition.direction}
-                      health={this.state.playerPosition.health}
-              />
-                    {enemyDisplay}
-
-          </Layer>
-        </Stage>
+          {won}
         </div>
         <div>
-          <h6>Enemies Alive  is {enemyArray.length}</h6>
+          <h6>Enemies Alive  is {this.state.enemyArray.length}</h6>
           <h6>Attack is {this.state.playerPosition.attack} </h6>
           <h6>Defence is {this.state.playerPosition.defense}</h6>
           <h6>Health is {this.state.playerPosition.health[1]} / {this.state.playerPosition.health[0]} </h6>
