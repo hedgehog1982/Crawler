@@ -286,54 +286,60 @@ class App extends React.Component { //ready for cache
     this.state = {
 
         loadedImages : 0,
-        amountToLoad : 4
+        amountToLoad : 3
     }
 
   }
   // cache all images in arrays (do in one pass)
-  componentDidMount = () => {
+componentDidMount = () => {
 
-    //Same thing three times !!!! needs to be a function!!!!!!!!!!!
+  //Same thing three times !!!! needs to be a function!!!!!!!!!!!
 
-    let dungeonFloorArray = new Array(dungeonFloorImages.length)
-  generateImage (dungeonFloorArray, dungeonFloorImages ).then(() => {
+  let dungeonFloorArray = new Array(dungeonFloorImages.length)
+  generateImage(dungeonFloorArray, dungeonFloorImages).then(() => {
     let loadedImages = this.state.loadedImages + 1;
-    console.log("Downloaded dungeon floor array",loadedImages)
-    this.setState({
-         loadedImages : loadedImages
-    })
+    console.log("Downloaded dungeon floor array", loadedImages)
+    this.setState({loadedImages: loadedImages})
     console.log()
   });
 
   let dungeonWallArray = new Array(dungeonWallImages.length)
-generateImage (dungeonWallArray, dungeonWallImages ).then(() => {
-  let loadedImages = this.state.loadedImages + 1;
-    console.log("Downloaded dungeon Wall array",loadedImages)
-  this.setState({
-       loadedImages : loadedImages
-  })
-});
+  generateImage(dungeonWallArray, dungeonWallImages).then(() => {
+    let loadedImages = this.state.loadedImages + 1;
+    console.log("Downloaded dungeon Wall array", loadedImages)
+    this.setState({loadedImages: loadedImages})
+  });
 
-let dungeonLavaArray = new Array(dungeonLavaImages.length)
-generateImage (dungeonLavaArray, dungeonLavaImages ).then(() => {
-let loadedImages = this.state.loadedImages + 1;
-console.log("Downloaded dungeon Lava array",loadedImages)
-this.setState({
-     loadedImages : loadedImages
-})
-});
-
-
-
-
-
-
+  let dungeonLavaArray = new Array(dungeonLavaImages.length)
+  generateImage(dungeonLavaArray, dungeonLavaImages).then(() => {
+    let loadedImages = this.state.loadedImages + 1;
+    console.log("Downloaded dungeon Lava array", loadedImages)
+    this.setState({loadedImages: loadedImages})
+  });
 
 };
 
   render() {
+     // render load screen if finished render game
+         let toRender
+    if (this.state.amountToLoad === this.state.loadedImages){
+      toRender = ( <Game />)
+    } else {
+      toRender = (
+        <div>
+          <h1>LOADING CONTENT</h1>
+          <h1>LOADED</h1>
+          <h1>{this.state.loadedImages} of {this.state.amountToLoad }</h1>
+        </div>
+      )
+
+    }
+
+
     return(
-      <Game />
+      <div>
+          {toRender}
+      </div>
     )}
 }
 

@@ -23,6 +23,11 @@ let generateImage = (blankArray, imageURL) => {
   });
 };
 
+let healthObject = new Array(1)
+      healthObject[0] = new Image();
+      healthObject[0].src='sprite/objects/bread_ration.png';
+
+
 
 
 const dungeonFloorImages = [
@@ -88,9 +93,6 @@ let dungeonLava = new Array(4)   //create dungeon lava array
       dungeonLava[3] = new Image();
       dungeonLava[3].src='sprite/lava/lava3.png';
 
-let healthObject = new Array(4)
-      healthObject[0] = new Image();
-      healthObject[0].src='sprite/objects/bread_ration.png';
 
 
 
