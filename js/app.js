@@ -39,7 +39,7 @@ return (
 
 
 
-class App extends React.Component {
+class Game extends React.Component {
 
 
   constructor(props) {
@@ -279,6 +279,63 @@ class App extends React.Component {
     )}
 
 };
+
+class App extends React.Component { //ready for cache
+  constructor (props){
+    super(props)
+    this.state = {
+
+        loadedImages : 0,
+        amountToLoad : 4
+    }
+
+  }
+  // cache all images in arrays (do in one pass)
+  componentDidMount = () => {
+
+    //Same thing three times !!!! needs to be a function!!!!!!!!!!!
+
+    let dungeonFloorArray = new Array(dungeonFloorImages.length)
+  generateImage (dungeonFloorArray, dungeonFloorImages ).then(() => {
+    let loadedImages = this.state.loadedImages + 1;
+    console.log("Downloaded dungeon floor array",loadedImages)
+    this.setState({
+         loadedImages : loadedImages
+    })
+    console.log()
+  });
+
+  let dungeonWallArray = new Array(dungeonWallImages.length)
+generateImage (dungeonWallArray, dungeonWallImages ).then(() => {
+  let loadedImages = this.state.loadedImages + 1;
+    console.log("Downloaded dungeon Wall array",loadedImages)
+  this.setState({
+       loadedImages : loadedImages
+  })
+});
+
+let dungeonLavaArray = new Array(dungeonLavaImages.length)
+generateImage (dungeonLavaArray, dungeonLavaImages ).then(() => {
+let loadedImages = this.state.loadedImages + 1;
+console.log("Downloaded dungeon Lava array",loadedImages)
+this.setState({
+     loadedImages : loadedImages
+})
+});
+
+
+
+
+
+
+
+};
+
+  render() {
+    return(
+      <Game />
+    )}
+}
 
 ReactDOM.render(
   <App />,

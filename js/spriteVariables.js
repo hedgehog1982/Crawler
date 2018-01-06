@@ -1,5 +1,55 @@
 let  viewport = {        }
 
+let generateImage = (blankArray, imageURL) => {
+  return new Promise((resolve, reject) => {
+    console.log("PROMISE!")
+    let imagesLoaded = 0
+    for (let i=0; i < blankArray.length;i++){
+      blankArray[i] = new Image();
+      blankArray[i].onload = () => {
+        imagesLoaded ++
+        console.log("downloaded ", imagesLoaded , "images")
+
+        if (imagesLoaded === blankArray.length){
+          console.log("got all pictures")
+          resolve(imagesLoaded)
+        }
+
+      }
+      blankArray[i].src = imageURL[i]
+      console.log(imageURL[i])
+     }
+
+  });
+};
+
+
+
+const dungeonFloorImages = [
+  'sprite/floor/cobble_blood1.png',
+  'sprite/floor/cobble_blood2.png',
+  'sprite/floor/cobble_blood3.png',
+  'sprite/floor/cobble_blood4.png',
+  'sprite/floor/cobble_blood5.png',
+  'sprite/floor/cobble_blood8.png',
+  'sprite/floor/cobble_blood9.png',
+  'sprite/floor/cobble_blood10.png'
+]
+
+const dungeonWallImages = [
+  'sprite/wall/brick_gray0.png',
+  'sprite/wall/brick_gray1.png',
+  'sprite/wall/brick_gray2.png',
+  'sprite/wall/brick_gray3.png',
+]
+
+const dungeonLavaImages = [
+  'sprite/lava/lava0.png',
+  'sprite/lava/lava1.png',
+  'sprite/lava/lava2.png',
+  'sprite/lava/lava3.png'
+]
+
 let dungeonSprite = new Array(8)
     dungeonSprite[0] = new Image();
     dungeonSprite[0].src='sprite/floor/cobble_blood1.png';
@@ -41,6 +91,7 @@ let dungeonLava = new Array(4)   //create dungeon lava array
 let healthObject = new Array(4)
       healthObject[0] = new Image();
       healthObject[0].src='sprite/objects/bread_ration.png';
+
 
 
 
