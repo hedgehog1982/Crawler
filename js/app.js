@@ -1,6 +1,6 @@
 
 
-import {Layer, Sprite, Rect, Stage, Group} from 'react-konva';
+import {Layer, Sprite, Rect, Stage, Group, Circle, Text} from 'react-konva';
 import React from "react"
 import ReactDOM from "react-dom"
 import {Player} from "./components/player.js"
@@ -44,14 +44,6 @@ class Game extends React.Component {
 
   constructor(props) {
     super(props);
-
-    if (window.innerWidth > window.innerHeight){
-      viewport.width = window.innerWidth <= 1200 ? window.innerWidth -40 : 1200
-      viewport.height = window.innerHeight <= 1200 ? window.innerHeight -200: 100
-    } else {
-      viewport.width = 400
-      viewport.height = 600
-    }
 
     lastUpdate = new Date().getTime()
 
@@ -223,50 +215,76 @@ class Game extends React.Component {
 
        let won = null
        if (this.state.enemyArray.length === 0 && this.state.playerPosition.health[0] !==0){
+         let wrapper = document.getElementById("wrapper")
+               wrapper.scrollTop = 0  //round to smooth movement?
+               wrapper.scrollLeft = 0
          won = (
-           <div>
-              WON!
-           </div>
+           <Group >
+                          <Text   text={"WON"}
+                                  fontSize={30}
+                                  fill={"green"} />
+           </Group>
          )
        } else if (this.state.playerPosition.health[0] === 0){
+         let wrapper = document.getElementById("wrapper")
+               wrapper.scrollTop = 0  //round to smooth movement?
+               wrapper.scrollLeft = 0
          won = (
-           <div>
-              LOST!
-           </div>
+           <Group >
+                        <Text text={"LOST"}
+                              fontSize={30}
+                              fill={"red"}
+
+                              />
+           </Group>
          )
        } else {
          won =
-           <Stage className={"wrapper"} width={maximumX} height={maximumY} >
-               <Layer>
-               <Dungeon dungeonArray={this.state.dungeonArray} />
-               <Items items={this.state.objectArray} />
-               <Player
-                         playerGraphics={this.state.playerPosition.sprite}
-                         positionX={Math.round(this.state.playerPosition.locationX)}
-                         positionY={Math.round(this.state.playerPosition.locationY)}
-                         direction={this.state.playerPosition.direction}
-                         health={this.state.playerPosition.health}
+          <Group>
+             <Dungeon dungeonArray={this.state.dungeonArray} />
+             <Items items={this.state.objectArray} />
+             <Player
+                       playerGraphics={this.state.playerPosition.sprite}
+                       positionX={Math.round(this.state.playerPosition.locationX)}
+                       positionY={Math.round(this.state.playerPosition.locationY)}
+                       direction={this.state.playerPosition.direction}
+                       health={this.state.playerPosition.health}
+               />
+             <EnemyDisplay enemyArray={this.state.enemyArray} />
+               <Circle
+                 x={Math.round(this.state.playerPosition.locationX)}
+                 y={Math.round(this.state.playerPosition.locationY)}
+                 fillEnabled={false}
+                 strokeWidth={1600}
+                 stroke={'black'}
+                 radius={150}
+                />
+                <Circle
+                  x={Math.round(this.state.playerPosition.locationX)}
+                  y={Math.round(this.state.playerPosition.locationY)}
+                  fillEnabled={false}
+                  strokeWidth={1600}
+                  stroke={'black'}
+                  radius={500}
                  />
-               <EnemyDisplay enemyArray={this.state.enemyArray} />
-
-             </Layer>
-           </Stage>
-
+              </Group>
        }
 
       return (
         <div>
         <h2> DUNGEON CRAWLER </h2>
-         <div id={"wrapper"} className={"wrapper"} style={wrapperStyle} >
-          {won}
+          <div id={"wrapper"} className={"wrapper"} style={wrapperStyle} >
+            <Stage className={"wrapper"} width={maximumX} height={maximumY} >
+                <Layer>
+            {won}
+          </Layer>
+        </Stage>
         </div>
         <div>
-          <h6>Enemies Alive  is {this.state.enemyArray.length}</h6>
+          <h6>Enemies Alive are {this.state.enemyArray.length}</h6>
           <h6>Attack is {this.state.playerPosition.attack} </h6>
           <h6>Defence is {this.state.playerPosition.defense}</h6>
           <h6>Health is {this.state.playerPosition.health[1]} / {this.state.playerPosition.health[0]} </h6>
-
-
         </div>
         <div>
           <button onClick={this.onClick} id="walkUp">UP</button>
@@ -283,6 +301,15 @@ class Game extends React.Component {
 class App extends React.Component { //ready for cache
   constructor (props){
     super(props)
+
+    if (window.innerWidth > window.innerHeight){
+      viewport.width = window.innerWidth <= 1200 ? window.innerWidth -40 : 800
+      viewport.height = window.innerHeight <= 1200 ? window.innerHeight -200: 100
+    } else {
+      viewport.width = 400
+      viewport.height = 600
+    }
+
     this.state = {
 
         loadedImages : 0,
@@ -320,6 +347,12 @@ componentDidMount = () => {
 };
 
   render() {
+
+    let wrapperStyle ={ width : viewport.width + "px",
+                        height: viewport.height + "px",
+                        overflow : "hidden"
+                        }
+
      // render load screen if finished render game
          let toRender
     if (this.state.amountToLoad === this.state.loadedImages){

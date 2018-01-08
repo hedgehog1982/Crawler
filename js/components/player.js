@@ -39,6 +39,7 @@ class Player extends React.Component {
             strokeWidth={1}
             stroke={"black"}
             fill={"white"}
+            hitGraphEnabled={false}
             />
             <Rect
               x={this.props.positionX -2 }
@@ -46,6 +47,7 @@ class Player extends React.Component {
               width={healthWidth}
               height={5}
               fill={"green"}
+              hitGraphEnabled={false}
 
               />
           <Sprite image={img} x={this.props.positionX} y={this.props.positionY}
