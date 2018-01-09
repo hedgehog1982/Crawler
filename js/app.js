@@ -6,6 +6,7 @@ import ReactDOM from "react-dom"
 import {Player} from "./components/player.js"
 import {Dungeon} from "./components/dungeon.js"
 import {Items} from "./components/items.js"
+import {Won, Lost} from "./components/endScreens.js"
 
 class EnemyDisplay extends React.Component {
 constructor(props) {
@@ -68,7 +69,7 @@ class Game extends React.Component {
     } while (inDungeon === false)
 
     //populate dungeon with enemies
-    let enemies = 6
+    let enemies = 4
     let enemyArray = genEnemyArray (dungeonArray, enemies)
 
     //populate power-up
@@ -76,6 +77,7 @@ class Game extends React.Component {
     let objectArray = genObjectArray(dungeonArray, objects)
 
     console.log(objectArray)
+    let blankArray = []
 
 
     this.onClick = this.onClick.bind(this);
@@ -93,7 +95,8 @@ class Game extends React.Component {
           },
 
           enemyArray : enemyArray, // enemyArray,
-          objectArray : objectArray
+          objectArray : objectArray,
+          graveArray : blankArray
     }
   }
 
@@ -108,6 +111,10 @@ class Game extends React.Component {
 
  componentDidMount = () => {  //update positions  50 times a second
       this.interval = setInterval(this.updateAllPosition, 20);
+      let wrapper = document.getElementById("wrapper")
+            wrapper.scrollTop = Math.round(this.state.playerPosition.locationY - viewport.height /2);  //round to smooth movement?
+            wrapper.scrollLeft = Math.round(this.state.playerPosition.locationX - viewport.width / 2);
+
   };
 
   componentWillUnmount = () => {
@@ -146,10 +153,18 @@ class Game extends React.Component {
 
     //remove dead players (eventually check player is dead?)
     let cleanedArray = []
+    let graveArrayCopy = JSON.parse(JSON.stringify(this.state.graveArray))
     joinedArray.map((enemy) => {
 
-        if (enemy.health[0] !== 0){
+        if (enemy.health[0] !== 0){ //if its alive add it back to array
           cleanedArray.push(enemy)
+        } else {  //if its dead add its location to graveArray
+          graveArrayCopy.push({
+            name : "grave" + enemy.name,
+            locationX : Math.round(enemy.locationX),
+            locationY : Math.round(enemy.locationY),
+            img : graveObject[0]
+          })
         }
 
     })
@@ -160,7 +175,8 @@ class Game extends React.Component {
       this.setState({
        playerPosition : newPlayer,
        enemyArray : cleanedArray,
-       objectArray : cleanedItem
+       objectArray : cleanedItem,
+       graveArray : graveArrayCopy
       })
       lastUpdate = currentTime
 
@@ -219,29 +235,22 @@ class Game extends React.Component {
                wrapper.scrollTop = 0  //round to smooth movement?
                wrapper.scrollLeft = 0
          won = (
-           <Group >
-                          <Text   text={"WON"}
-                                  fontSize={30}
-                                  fill={"green"} />
-           </Group>
+            <Won />
          )
        } else if (this.state.playerPosition.health[0] === 0){
          let wrapper = document.getElementById("wrapper")
                wrapper.scrollTop = 0  //round to smooth movement?
                wrapper.scrollLeft = 0
          won = (
-           <Group >
-                        <Text text={"LOST"}
-                              fontSize={30}
-                              fill={"red"}
-
-                              />
-           </Group>
+           <Lost />
          )
        } else {
          won =
           <Group>
-             <Dungeon dungeonArray={this.state.dungeonArray} />
+             <Dungeon dungeonArray={this.state.dungeonArray}
+                      dungeonFloorArray={this.props.dungeonFloorArray}
+               />
+             <Items items={this.state.graveArray} />
              <Items items={this.state.objectArray} />
              <Player
                        playerGraphics={this.state.playerPosition.sprite}
@@ -310,38 +319,54 @@ class App extends React.Component { //ready for cache
       viewport.height = 600
     }
 
-    this.state = {
+    //set arrays up for cached image arrays using src paths from variables in spritevariables.js
+      let dungeonFloorArray = new Array(dungeonFloorImages.length)
+      let dungeonWallArray = new Array(dungeonWallImages.length)
+      let dungeonLavaArray = new Array(dungeonLavaImages.length)
 
+    this.state = {
         loadedImages : 0,
-        amountToLoad : 3
+        amountToLoad : 3,
+        dungeonFloorArray : dungeonFloorArray,
+        dungeonWallArray : dungeonWallArray,
+        dungeonLavaArray : dungeonLavaArray
     }
 
   }
-  // cache all images in arrays (do in one pass)
+
 componentDidMount = () => {
+
+    // cache all images in arrays (do in one pass)
+    //store values in setState to allow them to be used when generating images
 
   //Same thing three times !!!! needs to be a function!!!!!!!!!!!
 
-  let dungeonFloorArray = new Array(dungeonFloorImages.length)
-  generateImage(dungeonFloorArray, dungeonFloorImages).then(() => {
+  let dungeonFloorArray =this.state.dungeonFloorArray
+  generateImage(dungeonFloorArray, dungeonFloorImages).then((filledArray) => {
     let loadedImages = this.state.loadedImages + 1;
     console.log("Downloaded dungeon floor array", loadedImages)
-    this.setState({loadedImages: loadedImages})
-    console.log()
+    console.log(filledArray)
+    this.setState({loadedImages: loadedImages,
+                   dungeonFloorArray : filledArray
+      })
   });
 
-  let dungeonWallArray = new Array(dungeonWallImages.length)
-  generateImage(dungeonWallArray, dungeonWallImages).then(() => {
+  let dungeonWallArray = this.state.dungeonWallArray
+  generateImage(dungeonWallArray, dungeonWallImages).then((filledArray) => {
     let loadedImages = this.state.loadedImages + 1;
     console.log("Downloaded dungeon Wall array", loadedImages)
-    this.setState({loadedImages: loadedImages})
+    this.setState({loadedImages: loadedImages,
+                   dungeonWallArray : filledArray
+    })
   });
 
-  let dungeonLavaArray = new Array(dungeonLavaImages.length)
-  generateImage(dungeonLavaArray, dungeonLavaImages).then(() => {
+  let dungeonLavaArray = this.state.dungeonLavaArray
+  generateImage(dungeonLavaArray, dungeonLavaImages).then((filledArray) => {
     let loadedImages = this.state.loadedImages + 1;
     console.log("Downloaded dungeon Lava array", loadedImages)
-    this.setState({loadedImages: loadedImages})
+    this.setState({loadedImages: loadedImages,
+                  dungeonLavaArray : filledArray
+    })
   });
 
 };
@@ -356,7 +381,9 @@ componentDidMount = () => {
      // render load screen if finished render game
          let toRender
     if (this.state.amountToLoad === this.state.loadedImages){
-      toRender = ( <Game />)
+      toRender = ( <Game
+                      dungeonFloorArray={this.state.dungeonFloorArray}
+                  />)
     } else {
       toRender = (
         <div>

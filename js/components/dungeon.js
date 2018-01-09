@@ -8,14 +8,13 @@ class Dungeon extends React.Component {
     };
 
     componentDidMount = () => {
-        this.interval = setTimeout(() => {this.layer.cache()}, 500);
+        //cache the background for big speed ups
+        this.interval = setTimeout(() => {this.layer.cache()}, 50);
 
     };
 
     shouldComponentUpdate(nextProps, nextState) {  //Math.round(
     const differentDungeon= this.props.dungeonArray !== nextProps.dungeonArray;
-
-
     return differentDungeon
   };
 
@@ -30,25 +29,17 @@ render() {
 
     for (let x = 0; x < dungeonArray.length ; x++) {  // check X position from room X pos for whole of width
       for (let y = 0; y < dungeonArray[0].length ; y++) {  // check X position from room X pos for whole of width
-        if (dungeonArray[x][y] === "R"){  //dungeon room
+        if (dungeonArray[x][y] === "R" || dungeonArray[x][y] === "C" ){  //dungeon room
           dungeonRender.push( <DungeonFloor key={"Dungeon" + x + " " + y}
                     x={x * tileSize}
                     y={y * tileSize}
                     width={tileSize}
                     height={tileSize}
+                    dungeonFloorArray={this.props.dungeonFloorArray}
                     hitGraphEnabled={false}
                     /> )
         } else if ((dungeonArray[x][y] === "W")) {
           dungeonRender.push( <DungeonWall key={"Dungeon" + x + " " + y}
-                    x={x * tileSize}
-                    y={y * tileSize}
-                    width={tileSize}
-                    height={tileSize}
-                    hitGraphEnabled={false}
-                    /> )
-
-        }else if ((dungeonArray[x][y] === "C")) {
-          dungeonRender.push( <DungeonFloor key={"Dungeon" + x + " " + y}
                     x={x * tileSize}
                     y={y * tileSize}
                     width={tileSize}
@@ -89,6 +80,7 @@ render() {
          }
 
     render() {
+        let fillImage= this.props.dungeonFloorArray[random(0, this.props.dungeonFloorArray.length - 1)]
 
         return(
           <Rect
@@ -97,7 +89,7 @@ render() {
           width={this.props.width}
           height={this.props.height}
           hitGraphEnabled={false}
-          fillPatternImage={dungeonSprite[random(0,dungeonSprite.length - 1)]}
+          fillPatternImage={fillImage}
           ref="floor"
           />
         )}

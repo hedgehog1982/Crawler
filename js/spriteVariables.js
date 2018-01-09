@@ -12,7 +12,8 @@ let generateImage = (blankArray, imageURL) => {
 
         if (imagesLoaded === blankArray.length){
           console.log("got all pictures")
-          resolve(imagesLoaded)
+          //console.log(blankArray)
+          resolve(blankArray)
         }
 
       }
@@ -26,6 +27,10 @@ let generateImage = (blankArray, imageURL) => {
 let healthObject = new Array(1)
       healthObject[0] = new Image();
       healthObject[0].src='sprite/objects/bread_ration.png';
+
+let graveObject = new Array(1)
+      graveObject[0] = new Image();
+      graveObject[0].src='sprite/objects/grave.png';
 
 
 
@@ -55,23 +60,6 @@ const dungeonLavaImages = [
   'sprite/lava/lava3.png'
 ]
 
-let dungeonSprite = new Array(8)
-    dungeonSprite[0] = new Image();
-    dungeonSprite[0].src='sprite/floor/cobble_blood1.png';
-    dungeonSprite[1] = new Image();
-    dungeonSprite[1].src='sprite/floor/cobble_blood2.png';
-    dungeonSprite[2] = new Image();
-    dungeonSprite[2].src='sprite/floor/cobble_blood3.png';
-    dungeonSprite[3] = new Image();
-    dungeonSprite[3].src='sprite/floor/cobble_blood4.png';
-    dungeonSprite[4] = new Image();
-    dungeonSprite[4].src='sprite/floor/cobble_blood5.png';
-    dungeonSprite[5] = new Image();
-    dungeonSprite[5].src='sprite/floor/cobble_blood8.png';
-    dungeonSprite[6] = new Image();
-    dungeonSprite[6].src='sprite/floor/cobble_blood9.png';
-    dungeonSprite[7] = new Image();
-    dungeonSprite[7].src='sprite/floor/cobble_blood10.png';
 
 let dungeonWall = new Array(4)
     dungeonWall[0] = new Image();
