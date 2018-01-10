@@ -201,7 +201,7 @@ class Game extends React.Component {
         console.log("not pressed direction key, assume old key ")
         playerCopy.direction = playerPosition.direction
       }
-
+      //
        this.setState({
             playerPosition : playerCopy
        })
@@ -249,6 +249,9 @@ class Game extends React.Component {
           <Group>
              <Dungeon dungeonArray={this.state.dungeonArray}
                       dungeonFloorArray={this.props.dungeonFloorArray}
+                      dungeonLavaArray={this.props.dungeonLavaArray}
+                      dungeonWallArray={this.props.dungeonWallArray}
+
                />
              <Items items={this.state.graveArray} />
              <Items items={this.state.objectArray} />
@@ -313,7 +316,7 @@ class App extends React.Component { //ready for cache
 
     if (window.innerWidth > window.innerHeight){
       viewport.width = window.innerWidth <= 1200 ? window.innerWidth -40 : 800
-      viewport.height = window.innerHeight <= 1200 ? window.innerHeight -200: 100
+      viewport.height = window.innerHeight <= 1200 ? window.innerHeight -300: 1200
     } else {
       viewport.width = 400
       viewport.height = 600
@@ -383,7 +386,10 @@ componentDidMount = () => {
     if (this.state.amountToLoad === this.state.loadedImages){
       toRender = ( <Game
                       dungeonFloorArray={this.state.dungeonFloorArray}
+                      dungeonWallArray={this.state.dungeonWallArray}
+                      dungeonLavaArray={this.state.dungeonLavaArray}
                   />)
+
     } else {
       toRender = (
         <div>

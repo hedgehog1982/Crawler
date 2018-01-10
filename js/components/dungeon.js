@@ -44,6 +44,7 @@ render() {
                     y={y * tileSize}
                     width={tileSize}
                     height={tileSize}
+                    dungeonWallArray={this.props.dungeonWallArray}
                     hitGraphEnabled={false}
                     /> )
 
@@ -53,6 +54,7 @@ render() {
                     y={y * tileSize}
                     width={tileSize}
                     height={tileSize}
+                    dungeonLavaArray={this.props.dungeonLavaArray}
                     hitGraphEnabled={false}
                     /> )
 
@@ -101,7 +103,7 @@ render() {
             };
 
         render() {
-
+              let fillImage= this.props.dungeonWallArray[random(0, this.props.dungeonWallArray.length - 1)]
             return(
               <Rect
               x={this.props.x}
@@ -109,7 +111,7 @@ render() {
               width={this.props.width}
               height={this.props.height}
               hitGraphEnabled={false}
-              fillPatternImage={dungeonWall[random(0,dungeonWall.length - 1)]}
+              fillPatternImage={fillImage}
               ref="wall"
               />
             )}
@@ -123,8 +125,7 @@ render() {
 
 
             render() {
-            //  let img = document.createElement('img'); // use DOM HTMLImageElement
-            //    img.src = dungeonLava[random(0,dungeonLava.length - 1)]
+                  let fillImage= this.props.dungeonLavaArray[random(0, this.props.dungeonLavaArray.length - 1)]
                 return(
                   <Rect
                   x={this.props.x}
@@ -132,7 +133,7 @@ render() {
                   width={this.props.width}
                   height={this.props.height}
                   hitGraphEnabled={false}
-                  fillPatternImage={dungeonLava[random(0,dungeonLava.length - 1)]}
+                  fillPatternImage={fillImage}
                   ref="lava"
                   />
                 )}

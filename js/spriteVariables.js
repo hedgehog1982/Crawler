@@ -1,5 +1,8 @@
 let  viewport = {        }
 
+//function to generate array of images with src
+//list of assets that need caching in browser
+
 let generateImage = (blankArray, imageURL) => {
   return new Promise((resolve, reject) => {
     console.log("PROMISE!")
@@ -32,9 +35,6 @@ let graveObject = new Array(1)
       graveObject[0] = new Image();
       graveObject[0].src='sprite/objects/grave.png';
 
-
-
-
 const dungeonFloorImages = [
   'sprite/floor/cobble_blood1.png',
   'sprite/floor/cobble_blood2.png',
@@ -59,31 +59,6 @@ const dungeonLavaImages = [
   'sprite/lava/lava2.png',
   'sprite/lava/lava3.png'
 ]
-
-
-let dungeonWall = new Array(4)
-    dungeonWall[0] = new Image();
-    dungeonWall[0].src='sprite/wall/brick_gray0.png';
-    dungeonWall[1] = new Image();
-    dungeonWall[1].src='sprite/wall/brick_gray1.png';
-    dungeonWall[2] = new Image();
-    dungeonWall[2].src='sprite/wall/brick_gray2.png';
-    dungeonWall[3] = new Image();
-    dungeonWall[3].src='sprite/wall/brick_gray3.png';
-
-let dungeonLava = new Array(4)   //create dungeon lava array
-      dungeonLava[0] = new Image();
-      dungeonLava[0].src='sprite/lava/lava0.png';
-      dungeonLava[1] = new Image();
-      dungeonLava[1].src='sprite/lava/lava1.png';
-      dungeonLava[2] = new Image();
-      dungeonLava[2].src='sprite/lava/lava2.png';
-      dungeonLava[3] = new Image();
-      dungeonLava[3].src='sprite/lava/lava3.png';
-
-
-
-
 
 const jake = {
     src : 'spriteMaps/jake.png',
