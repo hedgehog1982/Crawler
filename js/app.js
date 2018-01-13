@@ -49,8 +49,8 @@ class Game extends React.Component {
     lastUpdate = new Date().getTime()
 
     //generate dungeon
-    let rooms = 6
-    let dungeonArray = dungeonArray = generateRooms(rooms,maximumX ,maximumY)
+    let rooms = 7
+    let dungeonArray = []
     dungeonArray = generateRooms(rooms,maximumX ,maximumY)
     console.log(dungeonArray)
 
@@ -61,7 +61,7 @@ class Game extends React.Component {
     do {
        X = random(0, maximumX)
        Y = random(0, maximumY)
-       console.log("generated",X,Y)
+       //console.log("generated",X,Y)
        let spriteWidth = selectedSprite.animation.walkUp[3]
        let spriteHeight = selectedSprite.animation.walkUp[2]
       inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
@@ -69,7 +69,7 @@ class Game extends React.Component {
     } while (inDungeon === false)
 
     //populate dungeon with enemies
-    let enemies = 4
+    let enemies = 6
     let enemyArray = genEnemyArray (dungeonArray, enemies)
 
     //populate power-up
@@ -262,25 +262,27 @@ class Game extends React.Component {
                        direction={this.state.playerPosition.direction}
                        health={this.state.playerPosition.health}
                />
-             <EnemyDisplay enemyArray={this.state.enemyArray} />
-               <Circle
-                 x={Math.round(this.state.playerPosition.locationX)}
-                 y={Math.round(this.state.playerPosition.locationY)}
-                 fillEnabled={false}
-                 strokeWidth={1600}
-                 stroke={'black'}
-                 radius={150}
-                />
-                <Circle
-                  x={Math.round(this.state.playerPosition.locationX)}
-                  y={Math.round(this.state.playerPosition.locationY)}
-                  fillEnabled={false}
-                  strokeWidth={1600}
-                  stroke={'black'}
-                  radius={500}
-                 />
+                   <EnemyDisplay enemyArray={this.state.enemyArray} />
+
               </Group>
        }
+
+       /*   <Circle   //add this back in after debugging
+            x={Math.round(this.state.playerPosition.locationX)}
+            y={Math.round(this.state.playerPosition.locationY)}
+            fillEnabled={false}
+            strokeWidth={1600}
+            stroke={'black'}
+            radius={150}
+           />
+           <Circle
+             x={Math.round(this.state.playerPosition.locationX)}
+             y={Math.round(this.state.playerPosition.locationY)}
+             fillEnabled={false}
+             strokeWidth={1600}
+             stroke={'black'}
+             radius={500}
+            /> */
 
       return (
         <div>
@@ -313,14 +315,16 @@ class Game extends React.Component {
 class App extends React.Component { //ready for cache
   constructor (props){
     super(props)
-
+    /* remove this while i redo
     if (window.innerWidth > window.innerHeight){
       viewport.width = window.innerWidth <= 1200 ? window.innerWidth -40 : 800
       viewport.height = window.innerHeight <= 1200 ? window.innerHeight -300: 1200
     } else {
       viewport.width = 400
       viewport.height = 600
-    }
+    }*/
+    viewport.width = maximumX  //add this temporarily while i redo corridors...
+    viewport.height = maximumY
 
     //set arrays up for cached image arrays using src paths from variables in spritevariables.js
       let dungeonFloorArray = new Array(dungeonFloorImages.length)

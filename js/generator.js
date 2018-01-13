@@ -10,7 +10,7 @@ for (let i=0; i< enemies; i++) { //generate all enemies
   do {        //pick a random co-ordinate
      X = random(0, maximumX)
      Y = random(0, maximumY)
-     console.log("generated",X,Y)
+     //console.log("generated",X,Y)
      let spriteWidth = selectedSprite.animation.walkUp[3]
      let spriteHeight = selectedSprite.animation.walkUp[2]
 
@@ -40,13 +40,13 @@ genObjectArray = (dungeonArray, objects) => {
   let inDungeon = false
   let selectedSprite = healthObject[0]
   let X , Y
-  console.log("in object function", selectedSprite)
-  console.log("width is " ,selectedSprite.width)
+  //console.log("in object function", selectedSprite)
+  //console.log("width is " ,selectedSprite.width)
 
   do {        //pick a random co-ordinate
      X = random(0, maximumX)
      Y = random(0, maximumY)
-     console.log("generated for object",X,Y)
+    // console.log("generated for object",X,Y)
      let spriteWidth = tileSize
      let spriteHeight = tileSize
 
@@ -66,7 +66,7 @@ genObjectArray = (dungeonArray, objects) => {
   })
 
 }
-  console.log(objectArray)
+//  console.log(objectArray)
   return (objectArray)
 
 }

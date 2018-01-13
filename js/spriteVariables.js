@@ -5,23 +5,22 @@ let  viewport = {        }
 
 let generateImage = (blankArray, imageURL) => {
   return new Promise((resolve, reject) => {
-    console.log("PROMISE!")
     let imagesLoaded = 0
     for (let i=0; i < blankArray.length;i++){
       blankArray[i] = new Image();
       blankArray[i].onload = () => {
         imagesLoaded ++
-        console.log("downloaded ", imagesLoaded , "images")
+      //  console.log("downloaded ", imagesLoaded , "images")
 
         if (imagesLoaded === blankArray.length){
-          console.log("got all pictures")
+      //    console.log("got all pictures")
           //console.log(blankArray)
           resolve(blankArray)
         }
 
       }
       blankArray[i].src = imageURL[i]
-      console.log(imageURL[i])
+    //  console.log(imageURL[i])
      }
 
   });
