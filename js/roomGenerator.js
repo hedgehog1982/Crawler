@@ -89,25 +89,37 @@ placeCorridors = () => {
    for (let startRoom = 0; startRoom < roomArray.length - 1; startRoom ++ ) {  // start at first room and try and connect it to every other room1
      for (let endRoom = startRoom + 1; endRoom < roomArray.length; endRoom++ ) { //look at next adjacent room and loop through for every room
               //console.log("logging loops", startRoom, endRoom)
+                //make the rest of the code a little more readable
                 let startTop = roomArray[startRoom].positionY  //top of room 1
                 let startBottom = roomArray[startRoom].positionY + roomArray[startRoom].roomHeight //bottom of room 1
                 let startMiddle = roomArray[startRoom].positionY + (roomArray[startRoom].roomHeight / 2) //middle of room for the unlikely event the room is slightly bigger on same axis, you never know
+                let startLeft = roomArray[startRoom].positionX
+                let startRight = roomArray[startRoom].positionX + roomArray[startRoom].roomWidth
+                let startCentre = roomArray[startRoom].positionX + (roomArray[startRoom].roomWidth /2)
 
                 let endTop = roomArray[endRoom].positionY //top of room 2
                 let endBottom = roomArray[endRoom].positionY + roomArray[endRoom].roomHeight //bottom of room 2
+                let endLeft = roomArray[endRoom].positionX
+                let endRight = roomArray[endRoom].positionX + roomArray[endRoom].roomWidth
+
+              //for working out the where to place the corridor, this is the shared axis
+              let minimumX = startLeft  < endLeft ?  endLeft : startLeft
+              let maximumX = startRight <  endRight ? startRight - roomHeight : endRight -roomHeight
 
               let minimumY = startTop  < endTop  ?  endTop : startTop  //biggest y value
-
-              let startX
-              let endX
-
-                //smallest y+height value - roomheight
               let maximumY = startBottom <  endBottom ? startBottom - roomHeight : endBottom -roomHeight
 
-              if ((startTop >= endTop && startTop <= endBottom - roomHeight) || (startBottom >= endTop && startBottom <= endBottom - roomHeight) || (startMiddle >= endTop && startMiddle<= endBottom - roomHeight)) { //if the top / bottom or middle of room 1 is between the other rooms or the                console.log("minimum Y is ", minimumY)
+              //values are used for where we are drawing from and to
+              let startX
+              let endX
+              let startY
+              let endY
+
+              //horizontally aligned  // have glitches with corridors that i think has something to do with this not being quite right...
+              if ((startTop - roomHeight >= endTop  && startTop <= endBottom - roomHeight ) || (startBottom - roomHeight >= endTop && startBottom <= endBottom - roomHeight ) || (startMiddle >= endTop && startMiddle<= endBottom - roomHeight )) { //if the top / bottom or middle of room 1 is between the other rooms or the                console.log("minimum Y is ", minimumY)
                 console.log("maximum Y is" , maximumY)
 
-                if (roomArray[startRoom].positionX < roomArray[endRoom].positionX){  //work out where we drawing X axis from and to
+                if (roomArray[startRoom].positionX < roomArray[endRoom].positionX){  //work out where we drawing X axis from and to, RHS of one to LHS of other
                       startX = roomArray[startRoom].positionX + roomArray[startRoom].roomWidth
                       endX = roomArray[endRoom].positionX
 
@@ -116,66 +128,47 @@ placeCorridors = () => {
                     endX = roomArray[startRoom].positionX
 
                 }
-                console.log(startRoom, "and" , endRoom, "are on same plane")
-                console.log("going from ", startX, " to ", endX)
-                console.log("minimum Y is ",minimumY)
+
+                let boundY = random(minimumY, maximumY)       //pick a y starting point within the bound Y points
+
+                if (!roomOccupied(endX - startX, roomHeight, startX, boundY)){
+                              placeRoom(endX - startX, roomHeight, startX, boundY, "C")
+                }
+
+             //vertically aligned
+           } else if ((startLeft - roomWidth >= endLeft  && startLeft <= endRight - roomWidth ) || (startRight- roomWidth >= endLeft && startRight <= endRight - roomWidth ) || (startCentre >= endLeft && startCentre<= endRight - roomWidth )) {
+
+             if (roomArray[startRoom].positionY < roomArray[endRoom].positionY){  //work out where we drawing X axis from and to, RHS of one to LHS of other
+                   startY = roomArray[startRoom].positionY + roomArray[startRoom].roomHeight
+                   endY = roomArray[endRoom].positionY
+
+             } else {
+                 startY = roomArray[endRoom].positionY + roomArray[endRoom].roomHeight
+                 endY = roomArray[startRoom].positionY
+
+             }
+             console.log(startRoom, "and" , endRoom, "are on same vertical plane")
+             console.log("going from ", startY, " to ", endY)
+             console.log("x is between ", minimumX , " and ", maximumX)
+
+             //if its on the same y plane draw a straight line
+             //DRAW THE CORRIDOR (NEED TO CHECK IF OCCUPIED RATHER THAN JUST DRAWING WILLY NILLY)
+             let boundX = random(minimumX, maximumX)       //pick a y starting point within the bound Y points
+
+             if (!roomOccupied( roomWidth, endY - startY,  boundX, startY)){
+                           placeRoom( roomWidth, endY - startY,  boundX, startY, "C")
+             }
+
+
 
               }
-            //if its on the same y plane draw a straight line
-            //DRAW THE CORRIDOR (NEED TO CHECK IF OCCUPIED RATHER THAN JUST DRAWING WILLY NILLY)
-            let boundY = random(minimumY, maximumY)       //pick a y starting point within the bound Y points
 
-            if (!roomOccupied(endX - startX, roomHeight, startX, boundY)){
-                          placeRoom(endX - startX, roomHeight, startX, boundY, "C")
-            }
+
 
 
      }
    }
-/* let room1X, room1Y
- do {
-    room1X = random(minimumCoords , maximumCoords - roomWidth)
-    room1Y = random(minimumCoords , maximumCoords - roomHeight)
-    occupied = roomOccupied(1, 1, room1X, room1Y)
 
-  }
-  while (occupied === false)
-
-  let room2X, room2Y
-
-
-  do {
-     room2X = random(minimumCoords , maximumCoords - roomWidth)
-     room2Y = random(minimumCoords , maximumCoords - roomHeight)
-     occupied = roomOccupied(1, 1, room2X, room2Y)
-
-   }
-   while (occupied === false)
-
-  do {
-    occupied = roomOccupied(roomWidth, roomHeight, room1X, room1Y)
-        if (occupied === false){
-          placeRoom(roomWidth, roomHeight, room1X, room1Y, "C")
-        } else {
-          placeRoom(roomWidth, roomHeight, room1X, room1Y, "R")
-        }
-
-    if (room1X < room2X){  //this is a riduculous bit of code???
-          room1X += 1
-    } else if (room1X > room2X){
-          room1X -= 1
-    } else {
-
-      if  (room1Y < room2Y){
-        room1Y +=1
-      } else {
-        room1Y -=1
-      }
-
-    }
-
-  }
-  while (room1Y !== room2Y) */
    console.log("finished placing corridors")
 };
 
@@ -196,15 +189,16 @@ generateRoom = () => {
       positionX = random(minimumCoords , maximumCoords - roomWidth)
       positionY = random(minimumCoords , maximumCoords - roomHeight)
 
-      occupied = roomOccupied(roomWidth, roomHeight, positionX, positionY)
+      occupied = roomOccupied(roomWidth + 2, roomHeight + 2, positionX -1 , positionY -1)  //i think i want this altering so rooms arent place next to each other so ive added an extra square round it
       }
       while (occupied === true)
 
       roomArray.push({
-        roomWidth : roomWidth,
-        roomHeight : roomHeight,
         positionX : positionX,
-        positionY : positionY
+        roomWidth : roomWidth,
+        positionY : positionY,
+        roomHeight : roomHeight,
+
       })
       placeRoom(roomWidth, roomHeight, positionX, positionY, "R")
 
