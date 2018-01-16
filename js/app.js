@@ -49,7 +49,7 @@ class Game extends React.Component {
     lastUpdate = new Date().getTime()
 
     //generate dungeon
-    let rooms = 7
+    let rooms = 6
     let dungeonArray = []
     dungeonArray = generateRooms(rooms,maximumX ,maximumY)
     console.log(dungeonArray)
@@ -123,15 +123,12 @@ class Game extends React.Component {
 
   componentWillMount = () => {  //if its mounted listen for key presses
     document.addEventListener("keydown", this.handleKeyPress)
-    //this.setState({
-
-    //})
     };
 
   updateAllPosition = () => {  //update position --- needs speeding up
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
-  //  console.log(Math.round(1000 /  (timeDiff)), "FPS")
+    console.log(Math.round(1000 /  (timeDiff)), "FPS")
 
   //make duplicate of arrays so not altering directly
   let joinedArray = JSON.parse(JSON.stringify(this.state.enemyArray))
@@ -263,26 +260,25 @@ class Game extends React.Component {
                        health={this.state.playerPosition.health}
                />
                    <EnemyDisplay enemyArray={this.state.enemyArray} />
+                     <Circle   //add this back in after debugging
+                          x={Math.round(this.state.playerPosition.locationX)}
+                          y={Math.round(this.state.playerPosition.locationY)}
+                          fillEnabled={false}
+                          strokeWidth={1600}
+                          stroke={'black'}
+                          radius={150}
+                         />
+                         <Circle
+                           x={Math.round(this.state.playerPosition.locationX)}
+                           y={Math.round(this.state.playerPosition.locationY)}
+                           fillEnabled={false}
+                           strokeWidth={1600}
+                           stroke={'black'}
+                           radius={500}
+                          />
 
               </Group>
        }
-
-       /*   <Circle   //add this back in after debugging
-            x={Math.round(this.state.playerPosition.locationX)}
-            y={Math.round(this.state.playerPosition.locationY)}
-            fillEnabled={false}
-            strokeWidth={1600}
-            stroke={'black'}
-            radius={150}
-           />
-           <Circle
-             x={Math.round(this.state.playerPosition.locationX)}
-             y={Math.round(this.state.playerPosition.locationY)}
-             fillEnabled={false}
-             strokeWidth={1600}
-             stroke={'black'}
-             radius={500}
-            /> */
 
       return (
         <div>
@@ -315,16 +311,14 @@ class Game extends React.Component {
 class App extends React.Component { //ready for cache
   constructor (props){
     super(props)
-    /* remove this while i redo
+
     if (window.innerWidth > window.innerHeight){
       viewport.width = window.innerWidth <= 1200 ? window.innerWidth -40 : 800
       viewport.height = window.innerHeight <= 1200 ? window.innerHeight -300: 1200
     } else {
       viewport.width = 400
       viewport.height = 600
-    }*/
-    viewport.width = maximumX  //add this temporarily while i redo corridors...
-    viewport.height = maximumY
+    }
 
     //set arrays up for cached image arrays using src paths from variables in spritevariables.js
       let dungeonFloorArray = new Array(dungeonFloorImages.length)
@@ -356,6 +350,7 @@ componentDidMount = () => {
     this.setState({loadedImages: loadedImages,
                    dungeonFloorArray : filledArray
       })
+      this.forceUpdate()
   });
 
   let dungeonWallArray = this.state.dungeonWallArray
@@ -365,6 +360,7 @@ componentDidMount = () => {
     this.setState({loadedImages: loadedImages,
                    dungeonWallArray : filledArray
     })
+    this.forceUpdate()
   });
 
   let dungeonLavaArray = this.state.dungeonLavaArray
@@ -374,6 +370,7 @@ componentDidMount = () => {
     this.setState({loadedImages: loadedImages,
                   dungeonLavaArray : filledArray
     })
+    this.forceUpdate()
   });
 
 };

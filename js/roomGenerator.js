@@ -4,8 +4,8 @@ let canvasArray = [];  //want to access it everywhere. this is for collision dif
 let tileArray =[]; // this is for the dungeon to be displayed
 let corrupted = false;
 let tileSize = 32
-const minimumCoords = 1 //to allow wall tile
-const maximumCoords = (maximumX / tileSize) -1  //to allow wall tiles
+const minimumCoords = 2 //to allow wall tile
+const maximumCoords = (maximumX / tileSize) -2 //to allow wall tiles
 let roomArray =[]
 
 random = (min, max) => {
@@ -147,9 +147,6 @@ placeCorridors = () => {
                  endY = roomArray[startRoom].positionY
 
              }
-             console.log(startRoom, "and" , endRoom, "are on same vertical plane")
-             console.log("going from ", startY, " to ", endY)
-             console.log("x is between ", minimumX , " and ", maximumX)
 
              //if its on the same y plane draw a straight line
              //DRAW THE CORRIDOR (NEED TO CHECK IF OCCUPIED RATHER THAN JUST DRAWING WILLY NILLY)
@@ -158,11 +155,55 @@ placeCorridors = () => {
              if (!roomOccupied( roomWidth, endY - startY,  boundX, startY)){
                            placeRoom( roomWidth, endY - startY,  boundX, startY, "C")
              }
+           } else {     //not on same plane
+              //if the bottom of one is higher than top of another than that is where we start the x drawing down. we are drawing this for the length
+                    //should be a function... duplicating it is LAZY!!!!!!
+
+                    //    placeRoom = (roomWidth, roomHeight, positionX, positionY, letter) => {
+
+
+                   let boundX    //place corridor within allowed room boundaries
+                       let leftMinimumX = startLeft < endLeft ? startLeft : endLeft
+                       let leftMaximumX  = startLeft < endLeft ? startRight : endRight
+                       let rightMinimumX = startLeft > endLeft ? startLeft : endLeft
+                       let rightMaximumX  = startLeft > endLeft ? startRight : endRight
+                       let topMinimumY = startTop < endTop ? startTop : endTop
+                       let topMaximumY = startTop < endTop ? startBottom : endBottom
+                       let bottomMinimumY = startTop > endTop ? startTop : endTop
+                       let bottomMaximumY = startTop > endTop ? startBottom : endBottom
+
+                     if ((startTop < endTop &&  startLeft < endLeft ) || ( endTop < startTop && endLeft < startLeft)){ // if the rooms are in the drirection upper left to lower right
+
+                       //draw corridor down then to the right
+                       let topBoundX = random(leftMinimumX, leftMaximumX - roomWidth)
+                       let topBoundY = random(bottomMinimumY, bottomMaximumY - roomHeight)
+                                              //draw a corridor right and then down if not occupied
+                       if (!roomOccupied(roomWidth + 2, topBoundY - topMaximumY, topBoundX -1 , topMaximumY) && !roomOccupied(rightMinimumX - topBoundX, roomHeight + 2, topBoundX, topBoundY -1)){
+                         placeRoom(roomWidth, topBoundY - topMaximumY, topBoundX, topMaximumY, "C")
+                         placeRoom(rightMinimumX - topBoundX, roomHeight, topBoundX, topBoundY, "C")
+                       }
+
+                       //draw a corridor right and then down
+                     } else {
+                       let topBoundX = random(rightMinimumX, rightMaximumX - roomWidth)
+                       let topBoundY = random(bottomMinimumY, bottomMaximumY - roomHeight)
+                       if (!roomOccupied(roomWidth + 2, topBoundY - topMaximumY, topBoundX - 1) && !roomOccupied(topBoundX - leftMaximumX + roomWidth, roomHeight + 2, leftMaximumX, topBoundY -1)){
+                           placeRoom(roomWidth, topBoundY - topMaximumY, topBoundX, topMaximumY, "C")
+                           placeRoom(topBoundX - leftMaximumX + roomWidth, roomHeight, leftMaximumX, topBoundY, "C")
+                        }
 
 
 
-              }
 
+                     }
+
+
+                      //placeRoom(5, roomHeight, maximumX, , "C")
+
+
+
+
+           }
 
 
 
@@ -189,7 +230,7 @@ generateRoom = () => {
       positionX = random(minimumCoords , maximumCoords - roomWidth)
       positionY = random(minimumCoords , maximumCoords - roomHeight)
 
-      occupied = roomOccupied(roomWidth + 2, roomHeight + 2, positionX -1 , positionY -1)  //i think i want this altering so rooms arent place next to each other so ive added an extra square round it
+      occupied = roomOccupied(roomWidth + 4, roomHeight + 4, positionX -2 , positionY -2)  //i think i want this altering so rooms arent place next to each other so ive added an extra square round it
       }
       while (occupied === true)
 
