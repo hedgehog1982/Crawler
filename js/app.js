@@ -110,6 +110,8 @@ class Game extends React.Component {
 };
 
  componentDidMount = () => {  //update positions  50 times a second
+            this.innerCircle.cache(); //cache two circles for speedups? hopefully works
+            this.outerCircle.cache();
       this.interval = setInterval(this.updateAllPosition, 20);
       let wrapper = document.getElementById("wrapper")
             wrapper.scrollTop = Math.round(this.state.playerPosition.locationY - viewport.height /2);  //round to smooth movement?
@@ -169,7 +171,7 @@ class Game extends React.Component {
     //check if touching items
       let cleanedItem = touchingItems(newPlayer, itemArrayCopy)
 
-      this.setState({
+      this.setState({     //only set state if changes? would speed things up? object array and graveArray would change rarely
        playerPosition : newPlayer,
        enemyArray : cleanedArray,
        objectArray : cleanedItem,
@@ -264,17 +266,27 @@ class Game extends React.Component {
                           x={Math.round(this.state.playerPosition.locationX)}
                           y={Math.round(this.state.playerPosition.locationY)}
                           fillEnabled={false}
+                          shadowForStrokeEnabled={false}
+                          strokeHitEnabled={false}
+                          perfectDrawEnabled={false}
                           strokeWidth={1600}
                           stroke={'black'}
                           radius={150}
+                          listening={false}
+                          ref={node => {this.innerCircle = node;}}
                          />
                          <Circle
                            x={Math.round(this.state.playerPosition.locationX)}
                            y={Math.round(this.state.playerPosition.locationY)}
                            fillEnabled={false}
+                           shadowForStrokeEnabled={false}
+                           strokeHitEnabled={false}
+                           perfectDrawEnabled={false}
                            strokeWidth={1600}
                            stroke={'black'}
                            radius={500}
+                           listening={false}
+                           ref={node => {this.outerCircle = node;}}
                           />
 
               </Group>
@@ -283,9 +295,9 @@ class Game extends React.Component {
       return (
         <div>
         <h2> DUNGEON CRAWLER </h2>
-          <div id={"wrapper"} className={"wrapper"} style={wrapperStyle} >
-            <Stage className={"wrapper"} width={maximumX} height={maximumY} >
-                <Layer>
+          <div id={"wrapper"} className={"wrapper"} style={wrapperStyle}  >
+            <Stage className={"wrapper"} width={maximumX} height={maximumY}>
+                <Layer hitGraphEnabled={false} listening={false}>
             {won}
           </Layer>
         </Stage>

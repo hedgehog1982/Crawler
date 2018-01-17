@@ -41,6 +41,7 @@ class Item extends React.Component {
   this.state.image.src = this.props.img.src;
   this.state.image.onload = () => {
     this.imageNode.getLayer().batchDraw(); //update when loaded and force redraw
+            this.imageNode.cache()
   };
 };
 
@@ -50,6 +51,12 @@ class Item extends React.Component {
         image={this.state.image}
         x={this.props.positionX}
         y={this.props.positionY}
+        hitGraphEnabled={false}
+        hitGraphEnabled={false}
+        fillEnabled={false}
+        shadowForStrokeEnabled={false}
+        strokeHitEnabled={false}
+        listening={false}
         ref={node => {
           this.imageNode = node;
         }}

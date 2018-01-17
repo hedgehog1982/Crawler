@@ -8,9 +8,7 @@ class Dungeon extends React.Component {
     };
 
     componentDidMount = () => {
-        //cache the background for big speed ups
-        this.interval = setTimeout(() => {this.layer.cache()}, 50);
-
+        this.layer.cache()
     };
 
     shouldComponentUpdate(nextProps, nextState) {  //Math.round(
@@ -37,6 +35,7 @@ render() {
                     height={tileSize}
                     dungeonFloorArray={this.props.dungeonFloorArray}
                     hitGraphEnabled={false}
+                    listening={false}
                     /> )
         } else if ((dungeonArray[x][y] === "W")) {
           dungeonRender.push( <DungeonWall key={"Dungeon" + x + " " + y}
@@ -46,6 +45,7 @@ render() {
                     height={tileSize}
                     dungeonWallArray={this.props.dungeonWallArray}
                     hitGraphEnabled={false}
+                    listening={false}
                     /> )
 
         } else {
@@ -56,6 +56,7 @@ render() {
                     height={tileSize}
                     dungeonLavaArray={this.props.dungeonLavaArray}
                     hitGraphEnabled={false}
+                    listening={false}
                     /> )
 
         }

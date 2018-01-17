@@ -7,6 +7,10 @@ class Player extends React.Component {
       super(props);
     };
 
+    componentDidMount = () => {
+      //  this.layer.cache()
+    };
+
     shouldComponentUpdate(nextProps, nextState) {  //Math.round(
     const differentX = this.props.positionX !== nextProps.positionX;
     const differentY = this.props.positionY !== nextProps.positionY;
@@ -39,7 +43,10 @@ class Player extends React.Component {
             strokeWidth={1}
             stroke={"black"}
             fill={"white"}
-            hitGraphEnabled={false}
+            shadowForStrokeEnabled={false}
+            strokeHitEnabled={false}
+            perfectDrawEnabled={false}
+            listening={false}
             />
             <Rect
               x={this.props.positionX -2 }
@@ -47,15 +54,20 @@ class Player extends React.Component {
               width={healthWidth}
               height={5}
               fill={"green"}
-              hitGraphEnabled={false}
+              shadowForStrokeEnabled={false}
+              strokeHitEnabled={false}
+              perfectDrawEnabled={false}
+              listening={false}
 
               />
           <Sprite image={img} x={this.props.positionX} y={this.props.positionY}
              animations={this.props.playerGraphics.animation}
              animation={this.props.direction}
              frameRate={playerGraphics.frameRate}
-             ref={(node => {if(node && !node.isRunning()) node.start()})}  //to start animation
-             hitGraphEnabled={false}
+             ref={(node => {
+               if(node && !node.isRunning()) node.start(); this.layer = node;})}  //to start animation
+             perfectDrawEnabled={false}
+            listening={false}
              />
            </Group>
 
