@@ -8,6 +8,8 @@ let updatePos = (personArray, person, timeDiff) => {
  let newLocationX = position.locationX
  let newLocationY = position.locationY
 
+
+//work out direction and subtract or add
  if (position.direction === 'walkLeft'){
        newLocationX -= pixelsWalked
  } else if (position.direction === 'walkRight'){
@@ -18,28 +20,27 @@ let updatePos = (personArray, person, timeDiff) => {
      newLocationY += pixelsWalked
  }
 
- let spriteWidth = position.sprite.animation[position.direction][2]
- let spriteHeight = position.sprite.animation[position.direction][3]
+ let spriteWidth = position.sprite.animation[position.direction][2]  //widest points
+ let spriteHeight = position.sprite.animation[position.direction][3] //widest points
 
- let inDungeon = withinDungeon(newLocationX, newLocationY, spriteWidth, spriteHeight )
- let touching = touchingOthers(newLocationX, newLocationY, spriteWidth, spriteHeight, person, personArray)
+ let inDungeon = withinDungeon(newLocationX, newLocationY, spriteWidth, spriteHeight )  // check if still within dungeon
+ let touching = touchingOthers(newLocationX, newLocationY, spriteWidth, spriteHeight, person, personArray) //check if touching other player
 
- if (personArray.length -1 !== person){  //generate new driection for enemies
+ if (personArray.length -1 !== person){  //generate new driection for enemies  // not sure it should be in here.
     position.direction = randomDirection(position.direction);
  }
 
- if (inDungeon === true && touching === false){
+ if (inDungeon === true && touching === false){ //if its still in the dungeon and not touching anyone then update the location
       position.locationX = newLocationX
       position.locationY = newLocationY
  }
 
 };
 
-let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {
-  //let currentTime = JSON.stringify(new Date().getTime());  //dont need this anymore?
+let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {  //function to check if within dungeon still
   let inDungeon = false
 
-  newX = Math.round(newX)
+  newX = Math.round(newX)   //only care about full pixels
   newY = Math.round(newY)
   inDungeon = true
   if (newX < 0 ){
@@ -59,7 +60,7 @@ let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {
 }
 };
 
-randomDirection = (newDirection) => {
+randomDirection = (newDirection) => {   //4 in 30 chance of changing direction ( roughly every 0.5 seconds)
   let randomNum = random(0,30)
   if (randomNum === 0 ){
     newDirection = "walkLeft"
@@ -77,9 +78,7 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
   let collision = false;
   for (let i = 0; i < otherPlayers.length ; i++){  //check whold of arrayDiff except current person
 
-
-
-     if ( i !== person ){  // Person is the current number in array we are checking
+     if ( i !== person ){  // Person is the current number in array we are checking (always going to be in the same place )
    let otherWidth = otherPlayers[i].sprite.animation[otherPlayers[i].direction][2]
    let otherHeight = otherPlayers[i].sprite.animation[otherPlayers[i].direction][3]
 
@@ -90,16 +89,13 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
                 console.log("other player is ", otherPlayers[person].name)
 
                 //  (newLocationY < otherPlayers[i].locationY + otherHeight){
-                  if (otherPlayers[person].name === "player" || otherPlayers[i].name === "player"){
+                  if (otherPlayers[person].name === "player" || otherPlayers[i].name === "player"){  // fighting mechanics // player needs to be involved
                     console.log("defense is ", otherPlayers[i].defense )
                     console.log("attack is ", (otherPlayers[person]).attack)
                       otherPlayers[i].health[0] -=  (otherPlayers[person]).attack - otherPlayers[i].defense
-                      //at the minute this is all a bit uncomplicated.
                  }
 
-
-
-                  if (otherPlayers[i].health[0] < 0){
+                  if (otherPlayers[i].health[0] < 0){  // if health goes below zero just set it to zero
                     otherPlayers[i].health[0] = 0
                   }
                     collision = true
@@ -111,9 +107,8 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
   return (collision)
 };
 
-let touchingItems = (player, items) => {
-  //console.log("player is ", player)
-  //console.log("items is ", items)
+let touchingItems = (player, items) => {  //if touching a power up add that to the stats
+
   let direction = player.direction
 
   let spriteWidth = player.sprite.animation[direction][2]
@@ -147,7 +142,7 @@ let touchingItems = (player, items) => {
 
     }
     let cleanedArray =[]
-    items.map((item) => {
+    items.map((item) => {  //remove item once its been touched
 
         if (!(item.health === 0 && item.defense === 0 && item.attack === 0)){
           cleanedArray.push(item)

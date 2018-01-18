@@ -7,11 +7,11 @@ class Player extends React.Component {
       super(props);
     };
 
-    componentDidMount = () => {
+    componentDidMount = () => {   //cant cache. need to load at start?
       //  this.layer.cache()
     };
 
-    shouldComponentUpdate(nextProps, nextState) {  //Math.round(
+    shouldComponentUpdate(nextProps, nextState) {  //should only update if moved fully pixel, need to round
     const differentX = this.props.positionX !== nextProps.positionX;
     const differentY = this.props.positionY !== nextProps.positionY;
     const differentDirection = this.props.direction !== nextProps.direction;
@@ -20,19 +20,19 @@ class Player extends React.Component {
     return differentX || differentY || differentDirection || differentHealth
   };
 
-    componentWillMount = () => {  //if its mounted listen for key presses
+    componentWillMount = () => {
 
-      console.log("jake is ", this.props.positionX, this.props.positionY)
     };
 
     render(){
       let playerGraphics = this.props.playerGraphics
       let img = document.createElement('img'); // use DOM HTMLImageElement
           img.src = playerGraphics.src;
-        let rectWidth = (playerGraphics.animation[this.props.direction][2]) + 4         //width of animation + 2 pixels either side
-        let percentage =  this.props.health[0] / this.props.health[1]
+        let rectWidth = (playerGraphics.animation[this.props.direction][2]) + 4         //width of animation + 2 pixels either side  /this is for energy bar
+        let percentage =  this.props.health[0] / this.props.health[1]   //percentage of health left
         let healthWidth = Math.round(rectWidth * percentage)
 
+        //two rectangles are for health bar. sprite is the sprite  // node running is to start the animation
         return (
           <Group>
           <Rect

@@ -1,18 +1,21 @@
+////////////////////////////// need to remove these global variables!!!!!!!!!!!!!!!!//////////////////////////////
+
+
+
 let maximumX = 1920; //maximum horizontal
 let maximumY = 1920; //maximum vertical
-let canvasArray = [];  //want to access it everywhere. this is for collision differentDirection
-let tileArray =[]; // this is for the dungeon to be displayed
-let corrupted = false;
+let canvasArray = [];  //want to access it everywhere. this is for fast collision detection for dungeon floors.
+let tileArray =[]; // this is for the dungeon to be displayed and is a list of what tiles are being used
 let tileSize = 32
-const minimumCoords = 2 //to allow wall tile
+const minimumCoords = 2 //to allow wall tile on edges
 const maximumCoords = (maximumX / tileSize) -2 //to allow wall tiles
-let roomArray =[]
+let roomArray =[]   //keep track of where rooms have been placed for generating corridors. no need to be a globale
 
 random = (min, max) => {
 return Math.floor(Math.random()*(max-min+1)+min);
 };
 
-populateCanvasArray = () => {
+populateCanvasArray = () => {       //populate ca
 
   for (let x = 0; x < tileArray.length; x++) { //go through each of position in tile array
     for (let y = 0; y < tileArray[0].length; y++) {
@@ -28,19 +31,20 @@ populateCanvasArray = () => {
   }
 };
 
-roomOccupied = (roomWidth, roomHeight, positionX, positionY) => {
+roomOccupied = (roomWidth, roomHeight, positionX, positionY) => {     //check if the room / corridor can be placed
   let occupied = false;
   for (let x = positionX; x < positionX + roomWidth ; x++) {  // check X position from room X pos for whole of width
     for (let y = positionY; y < positionY + roomHeight ; y++) {  // check X position from room X pos for whole of width
       if ((tileArray[x][y] === "R") || (tileArray[x][y] === "C")) {
         occupied = true;
+        break; // small speed up?
       }
     }
   }
   return occupied
 };
 
-placeRoom = (roomWidth, roomHeight, positionX, positionY, letter) => {
+placeRoom = (roomWidth, roomHeight, positionX, positionY, letter) => {      //letter is 'C' for corridor, 'W' for wall, "R for room" , blank is assumed lava
   for (let x = positionX; x < positionX + roomWidth ; x++) {  // check X position from room X pos for whole of width
     for (let y = positionY; y < positionY + roomHeight ; y++) {  // check X position from room X pos for whole of width
         tileArray[x][y] = letter
@@ -48,7 +52,7 @@ placeRoom = (roomWidth, roomHeight, positionX, positionY, letter) => {
   }
 };
 
-placeWall = (x, y) => {
+placeWall = (x, y) => {     // go round whole tile and see if a wall needs adding
       if (tileArray[x][y] ==="R" || tileArray[x][y] ==="C")
       {
         if (tileArray[x-1][y] === undefined){ //place walls on sides
@@ -81,14 +85,13 @@ placeWall = (x, y) => {
 };
 
 placeCorridors = () => {
-  console.log("placing corridors")
-  let roomWidth = 2   //corridor is 3 x 3
+  let roomWidth = 2   //corridor is 3 x 3 so corridors will be 3 x 2 x 32px
   let roomHeight = 2
 
    //for room 1  to second to last room
    for (let startRoom = 0; startRoom < roomArray.length - 1; startRoom ++ ) {  // start at first room and try and connect it to every other room1
      for (let endRoom = startRoom + 1; endRoom < roomArray.length; endRoom++ ) { //look at next adjacent room and loop through for every room
-              //console.log("logging loops", startRoom, endRoom)
+
                 //make the rest of the code a little more readable
                 let startTop = roomArray[startRoom].positionY  //top of room 1
                 let startBottom = roomArray[startRoom].positionY + roomArray[startRoom].roomHeight //bottom of room 1
@@ -115,9 +118,8 @@ placeCorridors = () => {
               let startY
               let endY
 
-              //horizontally aligned  // have glitches with corridors that i think has something to do with this not being quite right...
+              //horizontally aligned
               if ((startTop - roomHeight >= endTop  && startTop <= endBottom - roomHeight ) || (startBottom - roomHeight >= endTop && startBottom <= endBottom - roomHeight ) || (startMiddle >= endTop && startMiddle<= endBottom - roomHeight )) { //if the top / bottom or middle of room 1 is between the other rooms or the                console.log("minimum Y is ", minimumY)
-                console.log("maximum Y is" , maximumY)
 
                 if (roomArray[startRoom].positionX < roomArray[endRoom].positionX){  //work out where we drawing X axis from and to, RHS of one to LHS of other
                       startX = roomArray[startRoom].positionX + roomArray[startRoom].roomWidth
@@ -131,7 +133,7 @@ placeCorridors = () => {
 
                 let boundY = random(minimumY, maximumY)       //pick a y starting point within the bound Y points
 
-                if (!roomOccupied(endX - startX, roomHeight, startX, boundY)){
+                if (!roomOccupied(endX - startX, roomHeight, startX, boundY)){      // should add a bit of a buffer round here so corridors not placed close to other rooms
                               placeRoom(endX - startX, roomHeight, startX, boundY, "C")
                 }
 
@@ -159,9 +161,6 @@ placeCorridors = () => {
               //if the bottom of one is higher than top of another than that is where we start the x drawing down. we are drawing this for the length
                     //should be a function... duplicating it is LAZY!!!!!!
 
-                    //    placeRoom = (roomWidth, roomHeight, positionX, positionY, letter) => {
-
-
                    let boundX    //place corridor within allowed room boundaries
                        let leftMinimumX = startLeft < endLeft ? startLeft : endLeft
                        let leftMaximumX  = startLeft < endLeft ? startRight : endRight
@@ -177,7 +176,7 @@ placeCorridors = () => {
                        //draw corridor down then to the right
                        let topBoundX = random(leftMinimumX, leftMaximumX - roomWidth)
                        let topBoundY = random(bottomMinimumY, bottomMaximumY - roomHeight)
-                                              //draw a corridor right and then down if not occupied
+                        //draw a corridor right and then down if not occupied
                        if (!roomOccupied(roomWidth + 2, topBoundY - topMaximumY, topBoundX -1 , topMaximumY) && !roomOccupied(rightMinimumX - topBoundX, roomHeight + 2, topBoundX, topBoundY -1)){
                          placeRoom(roomWidth, topBoundY - topMaximumY, topBoundX, topMaximumY, "C")
                          placeRoom(rightMinimumX - topBoundX, roomHeight, topBoundX, topBoundY, "C")
@@ -191,26 +190,10 @@ placeCorridors = () => {
                            placeRoom(roomWidth, topBoundY - topMaximumY, topBoundX, topMaximumY, "C")
                            placeRoom(topBoundX - leftMaximumX + roomWidth, roomHeight, leftMaximumX, topBoundY, "C")
                         }
-
-
-
-
                      }
-
-
-                      //placeRoom(5, roomHeight, maximumX, , "C")
-
-
-
-
            }
-
-
-
      }
    }
-
-   console.log("finished placing corridors")
 };
 
 
@@ -245,9 +228,11 @@ generateRoom = () => {
 
 };
 
+//passing in canvas height and width her but a global variable?!?!?!?!
 generateRooms = (rooms, canvasWidth, canvasHeight) => {  // (32 x 32 tile)  x 40 tiles across grid =1280 grid,   32 pixels per tile ...
   canvasArray = [];  //ensure all arrays are blank if we generate a new dungeonArray
-  tileArray = []
+
+  tileArray = []  //blanking tile array (only really useful when generating a new level or resetting )
   roomArray= []   //will be storing room size and dimensions here for corridor
 
   for (let rows = 0; rows < canvasHeight; rows++){  // make a blank array for collision detection
@@ -260,28 +245,19 @@ generateRooms = (rooms, canvasWidth, canvasHeight) => {  // (32 x 32 tile)  x 40
 
   let currentTime = JSON.stringify(new Date().getTime());  // dont use this anywhere?
 
-  //console.log(canvasWidth, canvasHeight)
-  //console.log(canvasArray)
-  //console.log(tileArray)
-
-  for (let i = 0; i < rooms; i++){  //generate rooms
+  for (let i = 0; i < rooms; i++){  //generate all our rooms before out corridors
             generateRoom()
   }
 
-  // for (let i = 0; i < rooms ; i++){ //generate corridors  // does not guarantee a corridor to every rooms
-        //i think i should keep track of all room sizes. then see if i can generate a corridor to every other room
        placeCorridors()
-  // }
 
    for (let x = 1; x < tileArray.length -1; x++) { //go through each of position in tile array and place walls.
      for (let y = 1; y < tileArray[0].length -1; y++) {
           placeWall(x, y)
     }
   }
-  console.log(roomArray)
 
-
-  populateCanvasArray()  //update canvas array for collision detection
+  populateCanvasArray()  //update canvas array for collision detection //
 
 return (tileArray)
 }

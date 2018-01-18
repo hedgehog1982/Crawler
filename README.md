@@ -1,13 +1,20 @@
-Dungeon Crawler Project 
+Dungeon Crawler Project
 
-Basics done ->
+Done -
 
-Randomly Generate a dungeon.  -- needs improving, 1 room has 1 or 2 corridors.
-collision detection for player and room
-health bars that deplete on contact
+Generate Dungeon - no dungeons left unconnected
+Generate enemies and hero
+Cache images before starting (not all yet)
+Generated health packs
+Win/ loss screen (very basic)
 
+ToDo -
 
-To be done
-Items to be added - health etc
-Game over screen
-Setup Screen (pick player, difficulty level, etc
+Weapon upgrades
+improve buttons
+improve vitals screen
+Work out why it crashes on mobile
+speed-ups (render enemies if visible, update enemies location only if visible)
+More comments
+Remove all my global variables
+Move more Javascript into components so it gets converted to ES5 and gets loaded as one scripts

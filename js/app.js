@@ -1,21 +1,21 @@
 
 
-import {Layer, Sprite, Rect, Stage, Group, Circle, Text} from 'react-konva';
+import {Layer, Sprite, Rect, Stage, Group, Circle, Text} from 'react-konva'; //import from konva-react
 import React from "react"
 import ReactDOM from "react-dom"
-import {Player} from "./components/player.js"
-import {Dungeon} from "./components/dungeon.js"
-import {Items} from "./components/items.js"
-import {Won, Lost} from "./components/endScreens.js"
+import {Player} from "./components/player.js"  //react component that handles player and enemy sprites
+import {Dungeon} from "./components/dungeon.js" // react component that hand dungeon images (Lava, floor and Wall)
+import {Items} from "./components/items.js"  //react component that handles health items and eventually weapons
+import {Won, Lost} from "./components/endScreens.js" // react component for win / loss screen
 
-class EnemyDisplay extends React.Component {
+class EnemyDisplay extends React.Component {  //splits enemy array into react component
 constructor(props) {
   super(props)
 }
 render () {
   //generate enemy display
   let enemyArray = this.props.enemyArray
-   enemyDisplay =[]
+   enemyDisplay =[]   //for passing into render         // need to only render enemies that are below visible area. should speed it uo
    let enemyDisplay = enemyArray.map((enemy , key) => {
 
        return(
@@ -46,38 +46,36 @@ class Game extends React.Component {
   constructor(props) {
     super(props);
 
-    lastUpdate = new Date().getTime()
+    lastUpdate = new Date().getTime()  //last update for working out distance travelled
 
     //generate dungeon
-    let rooms = 6
+    let rooms = 6                               //amount of rooms to generate
     let dungeonArray = []
-    dungeonArray = generateRooms(rooms,maximumX ,maximumY)
-    console.log(dungeonArray)
+    dungeonArray = generateRooms(rooms,maximumX ,maximumY)  // maximumX and maximumY are a global variable, not sure thats the right thing to do... definitly no need to pass it if it is
 
-    //place hero
+    //place hero within dungeon
     let inDungeon = false
-    let selectedSprite = jake
+    let selectedSprite = jake     //would like to pass this in as part of loading, maybe make it selectable
     let X, Y
     do {
-       X = random(0, maximumX)
+       X = random(0, maximumX)                //generate random X and Y
        Y = random(0, maximumY)
        //console.log("generated",X,Y)
-       let spriteWidth = selectedSprite.animation.walkUp[3]
+       let spriteWidth = selectedSprite.animation.walkUp[3]         //widest sprite points
        let spriteHeight = selectedSprite.animation.walkUp[2]
       inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
 
     } while (inDungeon === false)
 
     //populate dungeon with enemies
-    let enemies = 6
-    let enemyArray = genEnemyArray (dungeonArray, enemies)
+    let enemies = 6                                           //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
+    let enemyArray = genEnemyArray (dungeonArray, enemies)    // at the minute this can be placed next to hero, dont want that
 
-    //populate power-up
+    //populate power-up                                         //eventually want to add weapons and armour. function allows this
     let objects = 3
     let objectArray = genObjectArray(dungeonArray, objects)
 
-    console.log(objectArray)
-    let blankArray = []
+    let blankGraveArray = []        //doing this here rather than in setstate as eventually want to pull everything out as function (Allow easy set up on new game / new level)
 
 
     this.onClick = this.onClick.bind(this);
@@ -96,7 +94,7 @@ class Game extends React.Component {
 
           enemyArray : enemyArray, // enemyArray,
           objectArray : objectArray,
-          graveArray : blankArray
+          graveArray : blankGraveArray
     }
   }
 
@@ -112,15 +110,17 @@ class Game extends React.Component {
  componentDidMount = () => {  //update positions  50 times a second
             this.innerCircle.cache(); //cache two circles for speedups? hopefully works
             this.outerCircle.cache();
-      this.interval = setInterval(this.updateAllPosition, 20);
-      let wrapper = document.getElementById("wrapper")
+
+      this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)
+
+      let wrapper = document.getElementById("wrapper")      //move wrapper above plater
             wrapper.scrollTop = Math.round(this.state.playerPosition.locationY - viewport.height /2);  //round to smooth movement?
             wrapper.scrollLeft = Math.round(this.state.playerPosition.locationX - viewport.width / 2);
 
   };
 
   componentWillUnmount = () => {
-    clearInterval(this.interval);
+    clearInterval(this.interval);         //when we unmount clear the function that updates the positions
   };
 
   componentWillMount = () => {  //if its mounted listen for key presses
@@ -138,14 +138,16 @@ class Game extends React.Component {
   let itemArrayCopy = JSON.parse(JSON.stringify(this.state.objectArray))
 
     //check if in dungeon or touching enemy
+    joinedArray.push(playerCopy)    // make an array that is a combined enemy/ hero array
 
-    joinedArray.push(playerCopy)
-    for(let person = 0; person < joinedArray.length ; person++){
+
+    for(let person = 0; person < joinedArray.length ; person++){      // pass into my function to work out distances moved
           updatePos(joinedArray, person ,timeDiff)
     }
 
+    let newPlayer = joinedArray.pop()   // new player position is the end of the array
+
     //update scroll position
-    let newPlayer = joinedArray.pop()
     let wrapper = document.getElementById("wrapper")
           wrapper.scrollTop = Math.round(newPlayer.locationY - viewport.height /2);  //round to smooth movement?
           wrapper.scrollLeft = Math.round(newPlayer.locationX - viewport.width / 2);
@@ -181,7 +183,7 @@ class Game extends React.Component {
 
   };
 
-  handleKeyPress = (event) => {  //handle direction
+  handleKeyPress = (event) => {  //handle direction from key press
         let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
       if (event.key == "ArrowLeft" ) {
         console.log("walking Left")
@@ -206,7 +208,7 @@ class Game extends React.Component {
        })
   };
 
-  onClick = (e) => {
+  onClick = (e) => {    //handle direction from button press
     let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
     playerCopy.direction = e.target.id
 
@@ -222,28 +224,32 @@ class Game extends React.Component {
 
   render() {
 
-    let wrapperStyle ={ width : viewport.width + "px",
+    let wrapperStyle ={ width : viewport.width + "px",            //set style for my wrapper (this is the viewport)
                         height: viewport.height + "px",
                         overflow : "hidden"
                         }
 
 
-       let won = null
-       if (this.state.enemyArray.length === 0 && this.state.playerPosition.health[0] !==0){
-         let wrapper = document.getElementById("wrapper")
-               wrapper.scrollTop = 0  //round to smooth movement?
+       let won = null                       //won is dynamically rendered
+       if (this.state.enemyArray.length === 0 && this.state.playerPosition.health[0] !==0){     // all enemies dead - array is zero - you have won
+         let wrapper = document.getElementById("wrapper")   //move the wrapper to the top left corned
+               wrapper.scrollTop = 0  /
                wrapper.scrollLeft = 0
          won = (
             <Won />
          )
-       } else if (this.state.playerPosition.health[0] === 0){
+       } else if (this.state.playerPosition.health[0] === 0){             // health at zero. you have lost
          let wrapper = document.getElementById("wrapper")
                wrapper.scrollTop = 0  //round to smooth movement?
                wrapper.scrollLeft = 0
          won = (
            <Lost />
          )
-       } else {
+       } else {                                 //otherwise game still going // this is monsterous and needs seperatin ideally
+                                                //highest points rendered at bottom // hence dungeon first
+
+
+
          won =
           <Group>
              <Dungeon dungeonArray={this.state.dungeonArray}
@@ -292,6 +298,7 @@ class Game extends React.Component {
               </Group>
        }
 
+       // h6's are temporary, buttons as well, need to be a bit more polished
       return (
         <div>
         <h2> DUNGEON CRAWLER </h2>
@@ -324,6 +331,7 @@ class App extends React.Component { //ready for cache
   constructor (props){
     super(props)
 
+    //set viewport based on orientation and screensize
     if (window.innerWidth > window.innerHeight){
       viewport.width = window.innerWidth <= 1200 ? window.innerWidth -40 : 800
       viewport.height = window.innerHeight <= 1200 ? window.innerHeight -300: 1200
@@ -332,7 +340,8 @@ class App extends React.Component { //ready for cache
       viewport.height = 600
     }
 
-    //set arrays up for cached image arrays using src paths from variables in spritevariables.js
+    //set arrays up for cached image arrays using src paths from variables in spritevariables.js,
+    // crash on mobile i think is something to do with here, need to cache hero and enemy variables before rendering
       let dungeonFloorArray = new Array(dungeonFloorImages.length)
       let dungeonWallArray = new Array(dungeonWallImages.length)
       let dungeonLavaArray = new Array(dungeonLavaImages.length)
@@ -362,7 +371,7 @@ componentDidMount = () => {
     this.setState({loadedImages: loadedImages,
                    dungeonFloorArray : filledArray
       })
-      this.forceUpdate()
+      this.forceUpdate()      //not sure i need this but not updating eitherway so have left it in
   });
 
   let dungeonWallArray = this.state.dungeonWallArray
@@ -389,21 +398,21 @@ componentDidMount = () => {
 
   render() {
 
-    let wrapperStyle ={ width : viewport.width + "px",
+    let wrapperStyle ={ width : viewport.width + "px",      //not using this here
                         height: viewport.height + "px",
                         overflow : "hidden"
                         }
 
      // render load screen if finished render game
          let toRender
-    if (this.state.amountToLoad === this.state.loadedImages){
+    if (this.state.amountToLoad === this.state.loadedImages){       //all fully cached render game
       toRender = ( <Game
                       dungeonFloorArray={this.state.dungeonFloorArray}
                       dungeonWallArray={this.state.dungeonWallArray}
                       dungeonLavaArray={this.state.dungeonLavaArray}
                   />)
 
-    } else {
+    } else {      //else wait 
       toRender = (
         <div>
           <h1>LOADING CONTENT</h1>

@@ -1,4 +1,4 @@
-genEnemyArray = (dungeonArray, enemies) => {
+genEnemyArray = (dungeonArray, enemies) => {        //generate the enemies
  let enemyArray = []
 
 for (let i=0; i< enemies; i++) { //generate all enemies
@@ -7,10 +7,10 @@ for (let i=0; i< enemies; i++) { //generate all enemies
   let selectedSprite = cinn  //temp, will add more
   let X, Y
 
-  do {        //pick a random co-ordinate
+  do {        //pick a random co-ordinate  // need to make sure not near hero in future.
      X = random(0, maximumX)
      Y = random(0, maximumY)
-     //console.log("generated",X,Y)
+
      let spriteWidth = selectedSprite.animation.walkUp[3]
      let spriteHeight = selectedSprite.animation.walkUp[2]
 
@@ -19,12 +19,12 @@ for (let i=0; i< enemies; i++) { //generate all enemies
   } while (inDungeon === false)
 
   enemyArray.push({
-    name : i,  //keep array number to track it easier
+    name : i,  //keep array number to track it easier later on
     locationX : Math.round(X),   //round numbers to stop sub pixel movement
     locationY : Math.round(Y),
     direction : "walkLeft",
     sprite : cinn,
-    health : [100 , 100],
+    health : [100 , 100],   //maximum health , current health
     attack : 15,
     defense : 13
   })
@@ -33,7 +33,7 @@ for (let i=0; i< enemies; i++) { //generate all enemies
 return(enemyArray)
 };
 
-genObjectArray = (dungeonArray, objects) => {
+genObjectArray = (dungeonArray, objects) => {  //generate objects. only health at moment
   let objectArray = []
   for (let i=0; i< objects; i++) {
 
