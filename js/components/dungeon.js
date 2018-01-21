@@ -11,8 +11,8 @@ class Dungeon extends React.Component {
         this.layer.cache()
     };
 
-    shouldComponentUpdate(nextProps, nextState) {  //Math.round(
-    const differentDungeon= this.props.dungeonArray !== nextProps.dungeonArray;
+   shouldComponentUpdate(nextProps, nextState) {  //Math.round(
+    const differentDungeon= this.props.dungeonArray.length !== nextProps.dungeonArray.length;
     return differentDungeon
   };
 
@@ -122,8 +122,6 @@ render() {
                 constructor(props){
                     super(props)
                 };
-
-
 
             render() {
                   let fillImage= this.props.dungeonLavaArray[random(0, this.props.dungeonLavaArray.length - 1)]

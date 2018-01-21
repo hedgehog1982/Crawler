@@ -5,7 +5,6 @@ import ReactDOM from "react-dom"
 class Items extends React.Component {
     constructor(props){
       super(props);
-
     };
 
     render(){
@@ -51,7 +50,6 @@ class Item extends React.Component {
         image={this.state.image}
         x={this.props.positionX}
         y={this.props.positionY}
-        hitGraphEnabled={false}
         hitGraphEnabled={false}
         fillEnabled={false}
         shadowForStrokeEnabled={false}

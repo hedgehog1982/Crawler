@@ -21,8 +21,8 @@ render () {
        return(
          <Player key={"Enemy" + key}
              playerGraphics={enemy.sprite}
-             positionX ={Math.round(enemy.locationX)}
-             positionY={Math.round(enemy.locationY)}
+             positionX ={enemy.locationX}
+             positionY={enemy.locationY}
              direction={enemy.direction}
              health={enemy.health}
          />
@@ -38,6 +38,52 @@ return (
 )}
 };
 
+class Shroud extends React.Component {  //splits enemy array into react component
+constructor(props) {
+  super(props)
+}
+
+componentDidMount = () => {  //update positions  50 times a second
+           this.innerCircle.cache(); //cache two circles for speedups? hopefully works
+           this.outerCircle.cache();
+         }
+
+render () {
+
+return (
+  <Group>
+    <Circle
+         x={this.props.x}
+         y={this.props.y}
+         fillEnabled={false}
+         shadowForStrokeEnabled={false}
+         strokeHitEnabled={false}
+         perfectDrawEnabled={false}
+         strokeWidth={1600}
+         stroke={'black'}
+         radius={this.props.radius}
+         listening={false}
+         ref={node => {this.innerCircle = node;}}
+        />
+        <Circle
+          x={this.props.x}
+          y={this.props.y}
+          fillEnabled={false}
+          shadowForStrokeEnabled={false}
+          strokeHitEnabled={false}
+          perfectDrawEnabled={false}
+          strokeWidth={1600}
+          stroke={'black'}
+          radius={this.props.radius + 350}
+          listening={false}
+          ref={node => {this.outerCircle = node;}}
+         />
+
+  </Group>
+
+
+)}
+};
 
 
 class Game extends React.Component {
@@ -56,11 +102,11 @@ class Game extends React.Component {
     //place hero within dungeon
     let inDungeon = false
     let selectedSprite = jake     //would like to pass this in as part of loading, maybe make it selectable
+    selectedSprite.src = this.props.spriteArray[0].src  //pass the loaded source in
     let X, Y
     do {
        X = random(0, maximumX)                //generate random X and Y
        Y = random(0, maximumY)
-       //console.log("generated",X,Y)
        let spriteWidth = selectedSprite.animation.walkUp[3]         //widest sprite points
        let spriteHeight = selectedSprite.animation.walkUp[2]
       inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
@@ -69,7 +115,7 @@ class Game extends React.Component {
 
     //populate dungeon with enemies
     let enemies = 6                                           //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
-    let enemyArray = genEnemyArray (dungeonArray, enemies)    // at the minute this can be placed next to hero, dont want that
+    let enemyArray = genEnemyArray (dungeonArray, enemies, this.props.spriteArray[1].src )    // pass the src in for cinn, this way its been cached, at the minute this can be placed next to hero, dont want that
 
     //populate power-up                                         //eventually want to add weapons and armour. function allows this
     let objects = 3
@@ -80,6 +126,7 @@ class Game extends React.Component {
 
     this.onClick = this.onClick.bind(this);
       this.state = {
+           radius : 150,
            dungeonArray : dungeonArray,                   // x , y , width, height
             playerPosition : {
             name : "player",
@@ -98,20 +145,9 @@ class Game extends React.Component {
     }
   }
 
-  shouldComponentUpdate(nextProps, nextState) {  //only update if position change whole number
-  const differentX = Math.round(this.state.playerPosition.locationX) !== Math.round(nextState.playerPosition.locationX);
-  const differentY = Math.round(this.state.playerPosition.locationY) !== Math.round(nextState.playerPosition.locationY);
-  const differentDirection = this.state.playerPosition.direction !== nextState.playerPosition.direction;
-  const arrayDiff = this.state.enemyArray !== nextState.enemyArray
-
-  return differentX || differentY || differentDirection || arrayDiff;
-};
 
  componentDidMount = () => {  //update positions  50 times a second
-            this.innerCircle.cache(); //cache two circles for speedups? hopefully works
-            this.outerCircle.cache();
-
-      this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)
+      this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)  //
 
       let wrapper = document.getElementById("wrapper")      //move wrapper above plater
             wrapper.scrollTop = Math.round(this.state.playerPosition.locationY - viewport.height /2);  //round to smooth movement?
@@ -127,6 +163,7 @@ class Game extends React.Component {
     document.addEventListener("keydown", this.handleKeyPress)
     };
 
+
   updateAllPosition = () => {  //update position --- needs speeding up
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
@@ -136,14 +173,29 @@ class Game extends React.Component {
   let joinedArray = JSON.parse(JSON.stringify(this.state.enemyArray))
   let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
   let itemArrayCopy = JSON.parse(JSON.stringify(this.state.objectArray))
+  let updated = 0     //keep track of the amount of updates
 
     //check if in dungeon or touching enemy
     joinedArray.push(playerCopy)    // make an array that is a combined enemy/ hero array
 
+    let minBoundary = 50; //stop players on the edge of the boundary just popping into existence
+    //only check movement of things that have move within player view
+    let minimumX = this.state.playerPosition.locationX - minBoundary - (2 * this.state.radius)
+    let maximumX = this.state.playerPosition.locationX + minBoundary + (2 * this.state.radius)
+    let minimumY = this.state.playerPosition.locationY - minBoundary - (2 * this.state.radius)
+    let maximumY = this.state.playerPosition.locationY + minBoundary + (2 * this.state.radius)
+
 
     for(let person = 0; person < joinedArray.length ; person++){      // pass into my function to work out distances moved
-          updatePos(joinedArray, person ,timeDiff)
+      //an ideal place to check if within viewport, if its not then no point updating
+      let personPosition = joinedArray[person]
+      if ((personPosition.locationX < maximumX && personPosition.locationX > minimumX) && (personPosition.locationY < maximumY && personPosition.locationY > minimumY)){
+                  updatePos(joinedArray, person ,timeDiff)
+                  updated ++
+      } else {
+      }
     }
+    console.log("Total players update ", updated)
 
     let newPlayer = joinedArray.pop()   // new player position is the end of the array
 
@@ -169,16 +221,23 @@ class Game extends React.Component {
         }
 
     })
-
     //check if touching items
       let cleanedItem = touchingItems(newPlayer, itemArrayCopy)
 
-      this.setState({     //only set state if changes? would speed things up? object array and graveArray would change rarely
-       playerPosition : newPlayer,
-       enemyArray : cleanedArray,
-       objectArray : cleanedItem,
-       graveArray : graveArrayCopy
-      })
+      //update states
+        this.setState({  playerPosition : newPlayer}) //always update player state
+      if (graveArrayCopy.length !== this.state.graveArray.length){  //only update graveArray if its changed
+        this.setState({graveArray : graveArrayCopy})
+      }
+
+      if (cleanedItem.length !==this.state.objectArray.length ){ //only update if its been added to
+                this.setState({objectArray : cleanedItem})
+      }
+
+      if (updated !== 1) {  //if we updated the enemy array set that state
+        this.setState({enemyArray : cleanedArray})
+      }
+      this.setState({  playerPosition : newPlayer})
       lastUpdate = currentTime
 
   };
@@ -186,26 +245,20 @@ class Game extends React.Component {
   handleKeyPress = (event) => {  //handle direction from key press
         let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
       if (event.key == "ArrowLeft" ) {
-        console.log("walking Left")
         playerCopy.direction = "walkLeft"
       } else if  (event.key == "ArrowRight") {
-        console.log("you have right")
           playerCopy.direction = "walkRight"
-      //  this.setState({direction : "walkRight"})
       } else if  (event.key == "ArrowUp") {
             playerCopy.direction = "walkUp"
-        console.log("you have up")
       } else if  (event.key == "ArrowDown") {
-        console.log("you have down")
         playerCopy.direction = "walkDown"
       } else {
-        console.log("not pressed direction key, assume old key ")
         playerCopy.direction = playerPosition.direction
       }
-      //
-       this.setState({
-            playerPosition : playerCopy
-       })
+      if (this.state.playerPosition !== playerCopy.direction){ //only update if a different key is pressed
+               this.setState({playerPosition : playerCopy })
+      }
+
   };
 
   onClick = (e) => {    //handle direction from button press
@@ -216,11 +269,6 @@ class Game extends React.Component {
       playerPosition : playerCopy
     })
   };
-
-  componentDidUpdate(oldProps, oldState) {
-
-};
-
 
   render() {
 
@@ -233,7 +281,7 @@ class Game extends React.Component {
        let won = null                       //won is dynamically rendered
        if (this.state.enemyArray.length === 0 && this.state.playerPosition.health[0] !==0){     // all enemies dead - array is zero - you have won
          let wrapper = document.getElementById("wrapper")   //move the wrapper to the top left corned
-               wrapper.scrollTop = 0  /
+               wrapper.scrollTop = 0
                wrapper.scrollLeft = 0
          won = (
             <Won />
@@ -262,38 +310,16 @@ class Game extends React.Component {
              <Items items={this.state.objectArray} />
              <Player
                        playerGraphics={this.state.playerPosition.sprite}
-                       positionX={Math.round(this.state.playerPosition.locationX)}
-                       positionY={Math.round(this.state.playerPosition.locationY)}
+                       positionX={this.state.playerPosition.locationX}
+                       positionY={this.state.playerPosition.locationY}
                        direction={this.state.playerPosition.direction}
                        health={this.state.playerPosition.health}
                />
-                   <EnemyDisplay enemyArray={this.state.enemyArray} />
-                     <Circle   //add this back in after debugging
-                          x={Math.round(this.state.playerPosition.locationX)}
-                          y={Math.round(this.state.playerPosition.locationY)}
-                          fillEnabled={false}
-                          shadowForStrokeEnabled={false}
-                          strokeHitEnabled={false}
-                          perfectDrawEnabled={false}
-                          strokeWidth={1600}
-                          stroke={'black'}
-                          radius={150}
-                          listening={false}
-                          ref={node => {this.innerCircle = node;}}
-                         />
-                         <Circle
-                           x={Math.round(this.state.playerPosition.locationX)}
-                           y={Math.round(this.state.playerPosition.locationY)}
-                           fillEnabled={false}
-                           shadowForStrokeEnabled={false}
-                           strokeHitEnabled={false}
-                           perfectDrawEnabled={false}
-                           strokeWidth={1600}
-                           stroke={'black'}
-                           radius={500}
-                           listening={false}
-                           ref={node => {this.outerCircle = node;}}
-                          />
+               <EnemyDisplay enemyArray={this.state.enemyArray} />
+               <Shroud radius={this.state.radius}
+                 x={this.state.playerPosition.locationX}
+                 y={this.state.playerPosition.locationY}
+                />
 
               </Group>
        }
@@ -345,13 +371,15 @@ class App extends React.Component { //ready for cache
       let dungeonFloorArray = new Array(dungeonFloorImages.length)
       let dungeonWallArray = new Array(dungeonWallImages.length)
       let dungeonLavaArray = new Array(dungeonLavaImages.length)
+      let spriteArray = new Array(spriteArrayImages.length)
 
     this.state = {
         loadedImages : 0,
-        amountToLoad : 3,
+        amountToLoad : 4,
         dungeonFloorArray : dungeonFloorArray,
         dungeonWallArray : dungeonWallArray,
-        dungeonLavaArray : dungeonLavaArray
+        dungeonLavaArray : dungeonLavaArray,
+        spriteArray : spriteArray
     }
 
   }
@@ -365,9 +393,8 @@ componentDidMount = () => {
 
   let dungeonFloorArray =this.state.dungeonFloorArray
   generateImage(dungeonFloorArray, dungeonFloorImages).then((filledArray) => {
-    let loadedImages = this.state.loadedImages + 1;
+    let loadedImages = this.state.loadedImages + 1; //add 1 to state
     console.log("Downloaded dungeon floor array", loadedImages)
-    console.log(filledArray)
     this.setState({loadedImages: loadedImages,
                    dungeonFloorArray : filledArray
       })
@@ -394,6 +421,17 @@ componentDidMount = () => {
     this.forceUpdate()
   });
 
+  let spriteArray = this.state.spriteArray
+  generateImage(spriteArray, spriteArrayImages).then((filledArray) => {
+    let loadedImages = this.state.loadedImages + 1;
+    console.log("Downloaded Sprites", loadedImages)
+    this.setState({loadedImages: loadedImages,
+                  spriteArray : filledArray
+    })
+    this.forceUpdate()
+  });
+
+
 };
 
   render() {
@@ -410,9 +448,10 @@ componentDidMount = () => {
                       dungeonFloorArray={this.state.dungeonFloorArray}
                       dungeonWallArray={this.state.dungeonWallArray}
                       dungeonLavaArray={this.state.dungeonLavaArray}
+                      spriteArray={this.state.spriteArray}
                   />)
 
-    } else {      //else wait 
+    } else {      //else wait
       toRender = (
         <div>
           <h1>LOADING CONTENT</h1>

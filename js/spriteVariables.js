@@ -59,8 +59,12 @@ const dungeonLavaImages = [
   'sprite/lava/lava3.png'
 ]
 
+const spriteArrayImages = [
+  'spriteMaps/jake.png',
+  'spriteMaps/cinn2.png'
+]
+
 const jake = {
-    src : 'spriteMaps/jake.png',
     frameRate : 4,
     walkRate : 130,
     animation : {
@@ -92,7 +96,6 @@ const jake = {
 };
 
 const cinn = {
-  src : 'spriteMaps/cinn2.png',
   frameRate : 4,
   walkRate : 90,
   animation : {

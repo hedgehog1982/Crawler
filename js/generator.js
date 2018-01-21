@@ -1,4 +1,4 @@
-genEnemyArray = (dungeonArray, enemies) => {        //generate the enemies
+genEnemyArray = (dungeonArray, enemies, enemySrc) => {        //generate the enemies
  let enemyArray = []
 
 for (let i=0; i< enemies; i++) { //generate all enemies
@@ -6,6 +6,8 @@ for (let i=0; i< enemies; i++) { //generate all enemies
   let inDungeon = false
   let selectedSprite = cinn  //temp, will add more
   let X, Y
+  let sprite = cinn
+  sprite.src = enemySrc
 
   do {        //pick a random co-ordinate  // need to make sure not near hero in future.
      X = random(0, maximumX)
@@ -23,7 +25,7 @@ for (let i=0; i< enemies; i++) { //generate all enemies
     locationX : Math.round(X),   //round numbers to stop sub pixel movement
     locationY : Math.round(Y),
     direction : "walkLeft",
-    sprite : cinn,
+    sprite : sprite,
     health : [100 , 100],   //maximum health , current health
     attack : 15,
     defense : 13

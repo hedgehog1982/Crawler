@@ -8,7 +8,7 @@ class Player extends React.Component {
     };
 
     componentDidMount = () => {   //cant cache. need to load at start?
-      //  this.layer.cache()
+        //this.layer.cache()  //does not work with sprites!!!!!
     };
 
     shouldComponentUpdate(nextProps, nextState) {  //should only update if moved fully pixel, need to round

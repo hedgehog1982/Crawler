@@ -3,7 +3,7 @@ let lastUpdate;
 let updatePos = (personArray, person, timeDiff) => {
  let position = personArray[person]
  let pixelsWalked = 0;  //if no update in times dont walk
- pixelsWalked = (position.sprite.walkRate / 1000) * (timeDiff)
+ pixelsWalked = Math.round((position.sprite.walkRate / 1000) * (timeDiff))  //only care about full pixels
 
  let newLocationX = position.locationX
  let newLocationY = position.locationY
@@ -37,12 +37,9 @@ let updatePos = (personArray, person, timeDiff) => {
 
 };
 
-let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {  //function to check if within dungeon still
-  let inDungeon = false
 
-  newX = Math.round(newX)   //only care about full pixels
-  newY = Math.round(newY)
-  inDungeon = true
+let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {  //function to check if within dungeon still
+  let inDungeon = true
   if (newX < 0 ){
     return false
   } else {
