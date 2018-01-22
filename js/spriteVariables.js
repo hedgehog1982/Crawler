@@ -10,29 +10,27 @@ let generateImage = (blankArray, imageURL) => {
       blankArray[i] = new Image();
       blankArray[i].onload = () => {
         imagesLoaded ++
-      //  console.log("downloaded ", imagesLoaded , "images")
-
         if (imagesLoaded === blankArray.length){
-      //    console.log("got all pictures")
-          //console.log(blankArray)
           resolve(blankArray)
         }
 
       }
       blankArray[i].src = imageURL[i]
-    //  console.log(imageURL[i])
      }
 
   });
 };
 
-let healthObject = new Array(1)
-      healthObject[0] = new Image();
-      healthObject[0].src='sprite/objects/bread_ration.png';
-
 let graveObject = new Array(1)
       graveObject[0] = new Image();
       graveObject[0].src='sprite/objects/grave.png';
+
+const itemImages =[
+  'sprite/objects/bread_ration.png',
+  'sprite/objects/battle_axe1.png',
+    'sprite/objects/chain_mail1.png',
+
+]
 
 const dungeonFloorImages = [
   'sprite/floor/cobble_blood1.png',
@@ -61,7 +59,8 @@ const dungeonLavaImages = [
 
 const spriteArrayImages = [
   'spriteMaps/jake.png',
-  'spriteMaps/cinn2.png'
+  'spriteMaps/cinn2.png',
+  'spriteMaps/cinnRED.png'
 ]
 
 const jake = {

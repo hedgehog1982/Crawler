@@ -101,7 +101,7 @@ class Game extends React.Component {
 
     //place hero within dungeon
     let inDungeon = false
-    let selectedSprite = jake     //would like to pass this in as part of loading, maybe make it selectable
+    let selectedSprite = jake     //contains sprite map
     selectedSprite.src = this.props.spriteArray[0].src  //pass the loaded source in
     let X, Y
     do {
@@ -114,12 +114,12 @@ class Game extends React.Component {
     } while (inDungeon === false)
 
     //populate dungeon with enemies
-    let enemies = 6                                           //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
-    let enemyArray = genEnemyArray (dungeonArray, enemies, this.props.spriteArray[1].src )    // pass the src in for cinn, this way its been cached, at the minute this can be placed next to hero, dont want that
+    let enemies = 12                                         //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
+    let enemyArray = genEnemyArray (dungeonArray, enemies, this.props.spriteArray)    // pass the src in for cinn, this way its been cached, at the minute this can be placed next to hero, dont want that
 
     //populate power-up                                         //eventually want to add weapons and armour. function allows this
-    let objects = 3
-    let objectArray = genObjectArray(dungeonArray, objects)
+    let objects = 6
+    let objectArray = genObjectArray(dungeonArray, objects, this.props.itemArray)
 
     let blankGraveArray = []        //doing this here rather than in setstate as eventually want to pull everything out as function (Allow easy set up on new game / new level)
 
@@ -136,7 +136,8 @@ class Game extends React.Component {
             sprite : selectedSprite,
             health : [200 , 200],
             attack : 20,
-            defense : 10
+            defense : 10,
+            level : 1
           },
 
           enemyArray : enemyArray, // enemyArray,
@@ -167,7 +168,7 @@ class Game extends React.Component {
   updateAllPosition = () => {  //update position --- needs speeding up
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
-    console.log(Math.round(1000 /  (timeDiff)), "FPS")
+    //console.log(Math.round(1000 /  (timeDiff)), "FPS")
 
   //make duplicate of arrays so not altering directly
   let joinedArray = JSON.parse(JSON.stringify(this.state.enemyArray))
@@ -195,9 +196,8 @@ class Game extends React.Component {
       } else {
       }
     }
-    console.log("Total players update ", updated)
 
-    let newPlayer = joinedArray.pop()   // new player position is the end of the array
+  let newPlayer = joinedArray.pop()   // new player position is the end of the array
 
     //update scroll position
     let wrapper = document.getElementById("wrapper")
@@ -212,12 +212,21 @@ class Game extends React.Component {
         if (enemy.health[0] !== 0){ //if its alive add it back to array
           cleanedArray.push(enemy)
         } else {  //if its dead add its location to graveArray
+
           graveArrayCopy.push({
             name : "grave" + enemy.name,
             locationX : Math.round(enemy.locationX),
             locationY : Math.round(enemy.locationY),
             img : graveObject[0]
           })
+
+
+          if (graveArrayCopy.length % 4 === 0){  // if we have added a grave and its a multiple of 4 then up the level and give a health boost
+            newPlayer.level ++
+            newPlayer.health[0] += 50
+            newPlayer.health[1] += 50
+           }
+           newPlayer.health[0] = newPlayer.health[0] <= newPlayer.health[1] - 15 ? newPlayer.health[0] += 10 : newPlayer.health[1]
         }
 
     })
@@ -295,7 +304,9 @@ class Game extends React.Component {
          )
        } else {                                 //otherwise game still going // this is monsterous and needs seperatin ideally
                                                 //highest points rendered at bottom // hence dungeon first
-
+         let wrapper = document.getElementById("wrapper")  //bit hacky this
+         let wrapperX = wrapper === null ? 0 : wrapper.scrollLeft
+         let wrapperY = wrapper === null ? 0 : wrapper.scrollTop
 
 
          won =
@@ -320,6 +331,32 @@ class Game extends React.Component {
                  x={this.state.playerPosition.locationX}
                  y={this.state.playerPosition.locationY}
                 />
+                      <Text   x={wrapperX}
+                        y={wrapperY}
+                        text={this.state.playerPosition.health[1] + " / " + this.state.playerPosition.health[0] + "HP" }
+                        fontSize={20}
+                        fill={"green"} />
+                      <Text   x={wrapperX}
+                      y={wrapperY + 30}
+                      text={this.state.playerPosition.attack + " AP"}
+                      fontSize={20}
+                      fill={"green"} />
+                      <Text   x={wrapperX}
+                      y={wrapperY + 60}
+                      text={this.state.playerPosition.defense + " DP"}
+                      fontSize={20}
+                      fill={"green"} />
+                      <Text   x={wrapperX}
+                      y={wrapperY + 90}
+                      text={this.state.enemyArray.length + " Enemies"}
+                      fontSize={20}
+                      fill={"red"} />
+                      <Text   x={wrapperX}
+                        y={wrapperY + 120}
+                        text={"Current Level = " + this.state.playerPosition.level }
+                        fontSize={20}
+                        fill={"green"} />
+
 
               </Group>
        }
@@ -334,12 +371,6 @@ class Game extends React.Component {
             {won}
           </Layer>
         </Stage>
-        </div>
-        <div>
-          <h6>Enemies Alive are {this.state.enemyArray.length}</h6>
-          <h6>Attack is {this.state.playerPosition.attack} </h6>
-          <h6>Defence is {this.state.playerPosition.defense}</h6>
-          <h6>Health is {this.state.playerPosition.health[1]} / {this.state.playerPosition.health[0]} </h6>
         </div>
         <div>
           <button onClick={this.onClick} id="walkUp">UP</button>
@@ -372,24 +403,21 @@ class App extends React.Component { //ready for cache
       let dungeonWallArray = new Array(dungeonWallImages.length)
       let dungeonLavaArray = new Array(dungeonLavaImages.length)
       let spriteArray = new Array(spriteArrayImages.length)
+      let itemArray = new Array(itemImages.length)
 
     this.state = {
         loadedImages : 0,
-        amountToLoad : 4,
+        amountToLoad : 5,
         dungeonFloorArray : dungeonFloorArray,
         dungeonWallArray : dungeonWallArray,
         dungeonLavaArray : dungeonLavaArray,
-        spriteArray : spriteArray
+        spriteArray : spriteArray,
+        itemArray : itemArray
     }
 
   }
 
 componentDidMount = () => {
-
-    // cache all images in arrays (do in one pass)
-    //store values in setState to allow them to be used when generating images
-
-  //Same thing three times !!!! needs to be a function!!!!!!!!!!!
 
   let dungeonFloorArray =this.state.dungeonFloorArray
   generateImage(dungeonFloorArray, dungeonFloorImages).then((filledArray) => {
@@ -431,6 +459,16 @@ componentDidMount = () => {
     this.forceUpdate()
   });
 
+  let itemArray = this.state.itemArray
+  generateImage(itemArray, itemImages).then((filledArray) => {
+    let loadedImages = this.state.loadedImages + 1;
+    console.log("Downloaded Items", loadedImages)
+    this.setState({loadedImages: loadedImages,
+                  itemArray : filledArray
+    })
+    this.forceUpdate()
+  });
+
 
 };
 
@@ -449,6 +487,7 @@ componentDidMount = () => {
                       dungeonWallArray={this.state.dungeonWallArray}
                       dungeonLavaArray={this.state.dungeonLavaArray}
                       spriteArray={this.state.spriteArray}
+                      itemArray={this.state.itemArray}
                   />)
 
     } else {      //else wait
@@ -457,6 +496,11 @@ componentDidMount = () => {
           <h1>LOADING CONTENT</h1>
           <h1>LOADED</h1>
           <h1>{this.state.loadedImages} of {this.state.amountToLoad }</h1>
+          <h2>How to play</h2>
+          <h4>Use the arrow keys or buttons to move</h4>
+          <h4>Level up by defeating 4 enemies to get a health boost</h4>
+          <h4>Collect Power Ups to increase your Health, defense and Attack</h4>
+          <h4>Red Armed enemies are more powerful. Power Up before you attack</h4>
         </div>
       )
 

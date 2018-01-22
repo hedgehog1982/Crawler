@@ -89,7 +89,9 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
                   if (otherPlayers[person].name === "player" || otherPlayers[i].name === "player"){  // fighting mechanics // player needs to be involved
                     console.log("defense is ", otherPlayers[i].defense )
                     console.log("attack is ", (otherPlayers[person]).attack)
-                      otherPlayers[i].health[0] -=  (otherPlayers[person]).attack - otherPlayers[i].defense
+                    if ((otherPlayers[person].attack - otherPlayers[i].defense) > 0){
+                                            otherPlayers[i].health[0] -=  otherPlayers[person].attack - otherPlayers[i].defense
+                    }
                  }
 
                   if (otherPlayers[i].health[0] < 0){  // if health goes below zero just set it to zero

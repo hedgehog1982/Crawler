@@ -26,6 +26,12 @@ justify-content: center;
   color : white;
 }
 
+h4{
+  align-items: center;
+display: flex;
+justify-content: center;
+  color : white;
+}
 
 h6{
   color : white;
