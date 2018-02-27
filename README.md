@@ -4,17 +4,13 @@ Done -
 
 Generate Dungeon - no dungeons left unconnected
 Generate enemies and hero
-Cache images before starting (not all yet)
-Generated health packs
+Cache images before starting
+Generated health, defense and attack powerups
 Win/ loss screen (very basic)
+added HUD
+improved comments
 
-ToDo -
 
-Weapon upgrades
-improve buttons
-improve vitals screen
-Work out why it crashes on mobile
-speed-ups (render enemies if visible, update enemies location only if visible)
-More comments
-Remove all my global variables
-Move more Javascript into components so it gets converted to ES5 and gets loaded as one scripts
+TODO -
+A more polished GameTitle
+A more polished End screens
