@@ -1,5 +1,6 @@
-genEnemyArray = (dungeonArray, enemies, spriteArray) => {        //generate the enemies // sprite array 0 is player ignore that
+genEnemyArray = (dungeonArray, enemies, spriteArray, playerLocation) => {        //generate the enemies // sprite array 0 is player ignore that
  let enemyArray = []
+ console.log("player location is ", playerLocation)
 
 
 for (let i=0; i< enemies; i++) { //generate all enemies
@@ -21,7 +22,9 @@ for (let i=0; i< enemies; i++) { //generate all enemies
 
     inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
 
-  } while (inDungeon === false)
+  } while (inDungeon === false ||   
+      !( X < playerLocation.X -200 || X > playerLocation.X + 200)
+      || !(Y < playerLocation.Y -200 || Y > playerLocation.Y + 200 ))     //check wether in dungeon or near player
 
   enemyArray.push({
     name : i,  //keep array number to track it easier later on

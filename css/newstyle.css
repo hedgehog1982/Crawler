@@ -3,12 +3,21 @@
   margin: 0 auto;
 }
 
+.app{
+  height : 90%;
+  min-height: 90%;
+}
+
 
 .buttonGroup {
   margin-top : 5px;
   align-items: center;
 display: flex;
 justify-content: center;
+}
+
+.finalScreen > div {
+ min-height : 100%;
 }
 
 h1{
@@ -43,5 +52,13 @@ justify-content: center;
 
 body{
   background-color: black;
-  colour : white;
+  color : white;
+  min-height: 90%;
+  height : 90%;
+
+}
+
+html{
+  height : 90%;
+  min-height: 90%;
 }

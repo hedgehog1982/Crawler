@@ -1,12 +1,12 @@
-
-
 import {Layer, Sprite, Rect, Stage, Group, Circle, Text} from 'react-konva'; //import from konva-react
 import React from "react"
 import ReactDOM from "react-dom"
 import {Player} from "./components/player.js"  //react component that handles player and enemy sprites
 import {Dungeon} from "./components/dungeon.js" // react component that hand dungeon images (Lava, floor and Wall)
 import {Items} from "./components/items.js"  //react component that handles health items and eventually weapons
-import {Won, Lost} from "./components/endScreens.js" // react component for win / loss screen
+import {Won, Lost, LoadScreen} from "./components/screens.js" // react component for win / loss / loading screen
+import {GameTitle, HUD, Shroud} from "./components/onScreen.js" //react component - title screen , HUD and shroud
+
 
 class EnemyDisplay extends React.Component {  //splits enemy array into react component
 constructor(props) {
@@ -38,52 +38,7 @@ return (
 )}
 };
 
-class Shroud extends React.Component {  //splits enemy array into react component
-constructor(props) {
-  super(props)
-}
 
-componentDidMount = () => {  //update positions  50 times a second
-           this.innerCircle.cache(); //cache two circles for speedups? hopefully works
-           this.outerCircle.cache();
-         }
-
-render () {
-
-return (
-  <Group>
-    <Circle
-         x={this.props.x}
-         y={this.props.y}
-         fillEnabled={false}
-         shadowForStrokeEnabled={false}
-         strokeHitEnabled={false}
-         perfectDrawEnabled={false}
-         strokeWidth={1600}
-         stroke={'black'}
-         radius={this.props.radius}
-         listening={false}
-         ref={node => {this.innerCircle = node;}}
-        />
-        <Circle
-          x={this.props.x}
-          y={this.props.y}
-          fillEnabled={false}
-          shadowForStrokeEnabled={false}
-          strokeHitEnabled={false}
-          perfectDrawEnabled={false}
-          strokeWidth={1600}
-          stroke={'black'}
-          radius={this.props.radius + 350}
-          listening={false}
-          ref={node => {this.outerCircle = node;}}
-         />
-
-  </Group>
-
-
-)}
-};
 
 
 class Game extends React.Component {
@@ -114,8 +69,9 @@ class Game extends React.Component {
     } while (inDungeon === false)
 
     //populate dungeon with enemies
+    let playerLocation = {X : X, Y : Y}
     let enemies = 12                                         //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
-    let enemyArray = genEnemyArray (dungeonArray, enemies, this.props.spriteArray)    // pass the src in for cinn, this way its been cached, at the minute this can be placed next to hero, dont want that
+    let enemyArray = genEnemyArray (dungeonArray, enemies, this.props.spriteArray, playerLocation)    // pass the src in for cinn, this way its been cached, at the minute this can be placed next to hero, dont want that
 
     //populate power-up                                         //eventually want to add weapons and armour. function allows this
     let objects = 6
@@ -199,10 +155,10 @@ class Game extends React.Component {
 
   let newPlayer = joinedArray.pop()   // new player position is the end of the array
 
-    //update scroll position
-    let wrapper = document.getElementById("wrapper")
-          wrapper.scrollTop = Math.round(newPlayer.locationY - viewport.height /2);  //round to smooth movement?
-          wrapper.scrollLeft = Math.round(newPlayer.locationX - viewport.width / 2);
+    //update scroll position  ? move this into game render section?
+  //  let wrapper = document.getElementById("wrapper")
+  //        wrapper.scrollTop = Math.round(newPlayer.locationY - viewport.height /2);  //round to smooth movement?
+  //        wrapper.scrollLeft = Math.round(newPlayer.locationX - viewport.width / 2);
 
     //remove dead players (eventually check player is dead?)
     let cleanedArray = []
@@ -273,7 +229,6 @@ class Game extends React.Component {
   onClick = (e) => {    //handle direction from button press
     let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
     playerCopy.direction = e.target.id
-
     this.setState({
       playerPosition : playerCopy
     })
@@ -287,29 +242,36 @@ class Game extends React.Component {
                         }
 
 
-       let won = null                       //won is dynamically rendered
+       let gameState = null                       //game state is dynamically rendered
        if (this.state.enemyArray.length === 0 && this.state.playerPosition.health[0] !==0){     // all enemies dead - array is zero - you have won
-         let wrapper = document.getElementById("wrapper")   //move the wrapper to the top left corned
-               wrapper.scrollTop = 0
-               wrapper.scrollLeft = 0
-         won = (
+         //let wrapper = document.getElementById("wrapper")   //move the wrapper to the top left corned
+          //     wrapper.scrollTop = 0
+          //     wrapper.scrollLeft = 0
+       gameState = (
             <Won />
          )
        } else if (this.state.playerPosition.health[0] === 0){             // health at zero. you have lost
-         let wrapper = document.getElementById("wrapper")
-               wrapper.scrollTop = 0  //round to smooth movement?
-               wrapper.scrollLeft = 0
-         won = (
+
+         gameState = (
            <Lost />
          )
        } else {                                 //otherwise game still going // this is monsterous and needs seperatin ideally
                                                 //highest points rendered at bottom // hence dungeon first
-         let wrapper = document.getElementById("wrapper")  //bit hacky this
+         let wrapper = document.getElementById("wrapper")  //bit hacky
+         //  let wrapper = document.getElementById("wrapper")
+         if (wrapper !== null) { //gets generated after first call
+           wrapper.scrollTop = Math.round(this.state.playerPosition.locationY - viewport.height /2);  //round to smooth movement?
+           wrapper.scrollLeft = Math.round(this.state.playerPosition.locationX - viewport.width / 2);
+         }
          let wrapperX = wrapper === null ? 0 : wrapper.scrollLeft
          let wrapperY = wrapper === null ? 0 : wrapper.scrollTop
 
 
-         won =
+
+         gameState =
+         <div id={"wrapper"} className={"wrapper"} style={wrapperStyle}  >
+           <Stage className={"wrapper"} width={maximumX} height={maximumY}>
+               <Layer hitGraphEnabled={false} listening={false}>
           <Group>
              <Dungeon dungeonArray={this.state.dungeonArray}
                       dungeonFloorArray={this.props.dungeonFloorArray}
@@ -331,53 +293,23 @@ class Game extends React.Component {
                  x={this.state.playerPosition.locationX}
                  y={this.state.playerPosition.locationY}
                 />
-                      <Text   x={wrapperX}
-                        y={wrapperY}
-                        text={this.state.playerPosition.health[1] + " / " + this.state.playerPosition.health[0] + "HP" }
-                        fontSize={20}
-                        fill={"green"} />
-                      <Text   x={wrapperX}
-                      y={wrapperY + 30}
-                      text={this.state.playerPosition.attack + " AP"}
-                      fontSize={20}
-                      fill={"green"} />
-                      <Text   x={wrapperX}
-                      y={wrapperY + 60}
-                      text={this.state.playerPosition.defense + " DP"}
-                      fontSize={20}
-                      fill={"green"} />
-                      <Text   x={wrapperX}
-                      y={wrapperY + 90}
-                      text={this.state.enemyArray.length + " Enemies"}
-                      fontSize={20}
-                      fill={"red"} />
-                      <Text   x={wrapperX}
-                        y={wrapperY + 120}
-                        text={"Current Level = " + this.state.playerPosition.level }
-                        fontSize={20}
-                        fill={"green"} />
+              <HUD wrapperX = {wrapperX}
+                   wrapperY= {wrapperY}
+                   playerPosition= {this.state.playerPosition}
+                   enemyArrayLength={this.state.enemyArray.length}
+              />
 
 
               </Group>
+            </Layer>
+          </Stage>
+          </div>
        }
 
-       // h6's are temporary, buttons as well, need to be a bit more polished
+       // h6's are temporary, removed buttons as never going to be quick on movile, need to be a bit more polished
       return (
         <div>
-        <h2> DUNGEON CRAWLER </h2>
-          <div id={"wrapper"} className={"wrapper"} style={wrapperStyle}  >
-            <Stage className={"wrapper"} width={maximumX} height={maximumY}>
-                <Layer hitGraphEnabled={false} listening={false}>
-            {won}
-          </Layer>
-        </Stage>
-        </div>
-        <div>
-          <button onClick={this.onClick} id="walkUp">UP</button>
-           <button onClick={this.onClick} id="walkDown">DOWN</button>
-           <button onClick={this.onClick} id="walkLeft">LEFT</button>
-           <button onClick={this.onClick} id="walkRight">RIGHT</button>
-         </div>
+            {gameState}
       </div>
 
     )}
@@ -492,23 +424,15 @@ componentDidMount = () => {
 
     } else {      //else wait
       toRender = (
-        <div>
-          <h1>LOADING CONTENT</h1>
-          <h1>LOADED</h1>
-          <h1>{this.state.loadedImages} of {this.state.amountToLoad }</h1>
-          <h2>How to play</h2>
-          <h4>Use the arrow keys or buttons to move</h4>
-          <h4>Level up by defeating 4 enemies to get a health boost</h4>
-          <h4>Collect Power Ups to increase your Health, defense and Attack</h4>
-          <h4>Red Armed enemies are more powerful. Power Up before you attack</h4>
-        </div>
-      )
-
-    }
-
+         <LoadScreen
+            loadedImages = {this.state.loadedImages}
+            amountToLoad ={this.state.amountToLoad}
+           />
+       )}
 
     return(
       <div>
+        <GameTitle />
           {toRender}
       </div>
     )}
