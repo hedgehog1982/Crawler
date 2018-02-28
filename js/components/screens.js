@@ -9,7 +9,7 @@ class Won extends React.Component {
 
   render(){
     return(
-      <div className = {"finalScreen"} width={maximumX} height={maximumY} >
+      <div className = {"finalScreen"}  >
         <div>
         <h1>WON!</h1>
         </div>
@@ -24,7 +24,7 @@ class Won extends React.Component {
 
     render(){
       return(
-        <div className={"finalScreen"} width={maximumX} height={maximumY}>
+        <div className={"finalScreen"} >
           <div>
             <h1> LOST!</h1>
            </div>
@@ -34,7 +34,7 @@ class Won extends React.Component {
 
 const LoadScreen = ({loadedImages, amountToLoad}) => {
   return(
-        <div>
+        <div >
           <h1>LOADING CONTENT</h1>
           <h1>LOADED</h1>
           <h1>{loadedImages} of {amountToLoad }</h1>

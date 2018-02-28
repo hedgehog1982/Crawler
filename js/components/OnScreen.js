@@ -3,7 +3,7 @@ import ReactDOM from "react-dom"
 import {Text, Group, Circle} from 'react-konva'; //import from konva-react
 
 const GameTitle = props => {                                        //title
-    return <h1 className={"gameTitle"} >DUNGEON CRAWLER!!!!!!</h1>;
+    return <div className={"gameTitle"}><h1 className={"moveRight"} >DUNGEON </h1><h1 className={"moveLeft"}>CRAWLER!!!!!!</h1></div>;
 };
 
 const HUD = ({wrapperX, wrapperY, playerPosition, enemyArrayLength}) => {  //health, enemy etc on screen display
@@ -11,30 +11,31 @@ const HUD = ({wrapperX, wrapperY, playerPosition, enemyArrayLength}) => {  //hea
     return (
       <Group>
               <Text   x={wrapperX}
-              y={wrapperY}
-              text={playerPosition.health[1] + " / " + playerPosition.health[0] + "HP" }
-              fontSize={20}
-              fill={"green"} />
+                      y={wrapperY}
+                      text={playerPosition.health[1] + " / " + playerPosition.health[0] + "HP" }
+                      fontSize={20}
+                      fill={"green"}
+              />
               <Text   x={wrapperX}
-              y={wrapperY + 30}
-              text={playerPosition.attack + " AP"}
-              fontSize={20}
-              fill={"green"} />
+                      y={wrapperY + 30}
+                      text={playerPosition.attack + " AP"}
+                      fontSize={20}
+                      fill={"green"} />
               <Text   x={wrapperX}
-              y={wrapperY + 60}
-              text={playerPosition.defense + " DP"}
-              fontSize={20}
-              fill={"green"} />
+                      y={wrapperY + 60}
+                      text={playerPosition.defense + " DP"}
+                      fontSize={20}
+                      fill={"green"} />
               <Text   x={wrapperX}
-              y={wrapperY + 90}
-              text={enemyArrayLength + " Enemies"}
-              fontSize={20}
-              fill={"red"} />
+                      y={wrapperY + 90}
+                      text={enemyArrayLength + " Enemies"}
+                      fontSize={20}
+                      fill={"red"} />
               <Text   x={wrapperX}
-              y={wrapperY + 120}
-              text={"Current Level = " + playerPosition.level }
-              fontSize={20}
-              fill={"green"} />
+                      y={wrapperY + 120}
+                      text={"Current Level = " + playerPosition.level }
+                      fontSize={20}
+                      fill={"green"} />
         </Group >
             )
         };
@@ -50,35 +51,34 @@ const HUD = ({wrapperX, wrapperY, playerPosition, enemyArrayLength}) => {  //hea
                  }
 
         render () {
+          let {x, y, radius} = this.props
 
         return (
           <Group>
-            <Circle
-                 x={this.props.x}
-                 y={this.props.y}
-                 fillEnabled={false}
-                 shadowForStrokeEnabled={false}
-                 strokeHitEnabled={false}
-                 perfectDrawEnabled={false}
-                 strokeWidth={1600}
-                 stroke={'black'}
-                 radius={this.props.radius}
-                 listening={false}
-                 ref={node => {this.innerCircle = node;}}
-                />
-                <Circle
-                  x={this.props.x}
-                  y={this.props.y}
-                  fillEnabled={false}
-                  shadowForStrokeEnabled={false}
-                  strokeHitEnabled={false}
-                  perfectDrawEnabled={false}
-                  strokeWidth={1600}
-                  stroke={'black'}
-                  radius={this.props.radius + 350}
-                  listening={false}
-                  ref={node => {this.outerCircle = node;}}
-                 />
+            <Circle  x={x}
+                     y={y}
+                     fillEnabled={false}
+                     shadowForStrokeEnabled={false}
+                     strokeHitEnabled={false}
+                     perfectDrawEnabled={false}
+                     strokeWidth={1600}
+                     stroke={'black'}
+                     radius={radius}
+                     listening={false}
+                     ref={node => {this.innerCircle = node;}}
+                     />
+            <Circle   x={x}
+                      y={y}
+                      fillEnabled={false}
+                      shadowForStrokeEnabled={false}
+                      strokeHitEnabled={false}
+                      perfectDrawEnabled={false}
+                      strokeWidth={1600}
+                      stroke={'black'}
+                      radius={radius + 350}
+                      listening={false}
+                      ref={node => {this.outerCircle = node;}}
+                      />
           </Group>
 
         )}

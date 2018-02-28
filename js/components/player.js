@@ -26,8 +26,9 @@ class Player extends React.Component {
 
     render(){
       let playerGraphics = this.props.playerGraphics
+      console.log(this.props)
       let img = document.createElement('img'); // use DOM HTMLImageElement
-          img.src = playerGraphics.src;
+          img.src = playerGraphics.src;   //
         let rectWidth = (playerGraphics.animation[this.props.direction][2]) + 4         //width of animation + 2 pixels either side  /this is for energy bar
         let percentage =  this.props.health[0] / this.props.health[1]   //percentage of health left
         let healthWidth = Math.round(rectWidth * percentage)
@@ -74,10 +75,37 @@ class Player extends React.Component {
       )}
 };
 
+class EnemyDisplay extends React.Component {  //splits enemy array into react component
+constructor(props) {
+  super(props)
+}
+render () {
+  //generate enemy display
+  let enemyArray = this.props.enemyArray
+   enemyDisplay =[]   //for passing into render         // need to only render enemies that are below visible area. should speed it uo
+   let enemyDisplay = enemyArray.map((enemy , key) => {
 
+       return(
+         <Player key={"Enemy" + key}
+             playerGraphics={enemy.sprite}
+             positionX ={enemy.locationX}
+             positionY={enemy.locationY}
+             direction={enemy.direction}
+             health={enemy.health}
+         />
+     )
+     });
+
+return (
+  <Group>
+        {enemyDisplay}
+  </Group>
+)}
+};
 
 module.exports = {
-    Player: Player
+    Player: Player,
+    EnemyDisplay : EnemyDisplay
 
 
 }

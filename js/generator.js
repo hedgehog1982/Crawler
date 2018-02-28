@@ -22,7 +22,7 @@ for (let i=0; i< enemies; i++) { //generate all enemies
 
     inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
 
-  } while (inDungeon === false ||   
+  } while (inDungeon === false ||
       !( X < playerLocation.X -200 || X > playerLocation.X + 200)
       || !(Y < playerLocation.Y -200 || Y > playerLocation.Y + 200 ))     //check wether in dungeon or near player
 
@@ -55,8 +55,6 @@ genObjectArray = (dungeonArray, objects, objectPicArray) => {  //generate object
      X = random(0, maximumX)
      Y = random(0, maximumY)
 
-
-    // console.log("generated for object",X,Y)
      let spriteWidth = tileSize
      let spriteHeight = tileSize
 
@@ -70,7 +68,7 @@ genObjectArray = (dungeonArray, objects, objectPicArray) => {  //generate object
     name : "object" + i,
     locationX : Math.round(X),   //round numbers to stop sub pixel movement
     locationY : Math.round(Y),
-    img : objectPicArray[item],        //if item is 0 it is health, 1 is weapon
+    img : objectPicArray[item],        //if item is 0 it is health, 1 is weapon, 2 is armour
     health : item === 0 ?  random(20, 50) : 0,
     attack : item === 1 ? random(5, 10) : 0,
     defense : item === 2 ? random(2, 4) : 0

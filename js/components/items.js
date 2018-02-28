@@ -30,24 +30,18 @@ class Items extends React.Component {
 class Item extends React.Component {
     constructor(props){
       super(props);
-      this.state ={
-        image: new window.Image()
-      }
     };
 
     componentDidMount() {
-      console.log(this.props.img.src)
-  this.state.image.src = this.props.img.src;
-  this.state.image.onload = () => {
     this.imageNode.getLayer().batchDraw(); //update when loaded and force redraw
             this.imageNode.cache()
-  };
+
 };
 
     render(){
       return(
         <Image
-        image={this.state.image}
+        image={this.props.img}
         x={this.props.positionX}
         y={this.props.positionY}
         hitGraphEnabled={false}
