@@ -26,7 +26,6 @@ class Player extends React.Component {
 
     render(){
       let playerGraphics = this.props.playerGraphics
-      console.log(this.props)
       let img = document.createElement('img'); // use DOM HTMLImageElement
           img.src = playerGraphics.src;   //
         let rectWidth = (playerGraphics.animation[this.props.direction][2]) + 4         //width of animation + 2 pixels either side  /this is for energy bar

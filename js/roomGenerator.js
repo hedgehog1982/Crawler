@@ -1,14 +1,9 @@
 ////////////////////////////// need to remove these global variables!!!!!!!!!!!!!!!!//////////////////////////////
 
 
-
-let maximumX = 1920; //maximum horizontal
-let maximumY = 1920; //maximum vertical
 let canvasArray = [];  //want to access it everywhere. this is for fast collision detection for dungeon floors.
 let tileArray =[]; // this is for the dungeon to be displayed and is a list of what tiles are being used
 let tileSize = 32
-const minimumCoords = 2 //to allow wall tile on edges
-const maximumCoords = (maximumX / tileSize) -2 //to allow wall tiles
 let roomArray =[]   //keep track of where rooms have been placed for generating corridors. no need to be a globale
 
 random = (min, max) => {
@@ -197,9 +192,11 @@ placeCorridors = () => {
 };
 
 
-generateRoom = () => {
+generateRoom = ({canvasWidth, canvasHeight}) => {
       const minimumSize = 8    // 7 tiles is 224 pixels wide
       const maximumSize = 15//
+      const minimumCoords = 2 //to allow wall tile on edges
+      const maximumCoords = (canvasWidth / tileSize) -2 //to allow wall tiles
 
 
       let occupied = true
@@ -229,11 +226,12 @@ generateRoom = () => {
 };
 
 //passing in canvas height and width her but a global variable?!?!?!?!
-generateRooms = (rooms, canvasWidth, canvasHeight) => {  // (32 x 32 tile)  x 40 tiles across grid =1280 grid,   32 pixels per tile ...
+generateRooms = ({rooms, canvasDimension}) => {  // (32 x 32 tile)  x 40 tiles across grid =1280 grid,   32 pixels per tile ...
   canvasArray = [];  //ensure all arrays are blank if we generate a new dungeonArray
-
   tileArray = []  //blanking tile array (only really useful when generating a new level or resetting )
   roomArray= []   //will be storing room size and dimensions here for corridor
+  let canvasWidth = canvasDimension.width
+  let canvasHeight = canvasDimension.height
 
   for (let rows = 0; rows < canvasHeight; rows++){  // make a blank array for collision detection
     canvasArray.push(new Array(canvasWidth))
@@ -246,7 +244,7 @@ generateRooms = (rooms, canvasWidth, canvasHeight) => {  // (32 x 32 tile)  x 40
   let currentTime = JSON.stringify(new Date().getTime());  // dont use this anywhere?
 
   for (let i = 0; i < rooms; i++){  //generate all our rooms before out corridors
-            generateRoom()
+            generateRoom({canvasWidth, canvasHeight})
   }
 
        placeCorridors()

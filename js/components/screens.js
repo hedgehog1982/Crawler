@@ -37,7 +37,7 @@ const LoadScreen = ({loadedImages, amountToLoad}) => {
         <div >
           <h1>LOADING CONTENT</h1>
           <h1>LOADED</h1>
-          <h1>{loadedImages} of {amountToLoad }</h1>
+          <h1>{loadedImages} of {amountToLoad}</h1>
           <h2>How to play</h2>
           <h4>Use the arrow keys or buttons to move</h4>
           <h4>Level up by defeating 4 enemies to get a health boost</h4>
@@ -47,9 +47,34 @@ const LoadScreen = ({loadedImages, amountToLoad}) => {
  )
 }
 
+class PlayerSelect extends React.Component {
+    constructor(props){
+      super(props);
+    };
+
+   handleClick = (player) => {
+    this.props.selectAPlayer(player.target.id)
+    };
+
+
+  render(){
+    return(
+      <div id="playerSelectScreen">
+          <h1> PLEASE SELECT PLAYER</h1>
+          <div className={"playerPic"}>
+            <img onClick={this.handleClick} id="finn" src="./imgs/finncrop.jpg" />
+            <img onClick={this.handleClick} id="jake" src="./imgs/JakeGrowlingcrop.jpg" />
+
+
+          </div>
+      </div>
+    )}
+  };
+
 
     module.exports = {
         Won : Won,
         Lost : Lost,
-        LoadScreen : LoadScreen
+        LoadScreen : LoadScreen,
+        PlayerSelect : PlayerSelect
     }

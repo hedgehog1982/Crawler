@@ -1,6 +1,7 @@
-genEnemyArray = (dungeonArray, enemies, spriteArray, playerLocation) => {        //generate the enemies // sprite array 0 is player ignore that
+genEnemyArray = ({dungeonArray, enemies, spriteArray, playerLocation, canvasDimension}) => {        //generate the enemies // sprite array 0 is player ignore that
  let enemyArray = []
  console.log("player location is ", playerLocation)
+
 
 
 for (let i=0; i< enemies; i++) { //generate all enemies
@@ -14,13 +15,14 @@ for (let i=0; i< enemies; i++) { //generate all enemies
   selectedSprite.src = spriteArray[(i % 2 === 0 ? 1 : 2)].src
 
   do {        //pick a random co-ordinate  // need to make sure not near hero in future.
-     X = random(0, maximumX)
-     Y = random(0, maximumY)
+     X = random(0, 1920)
+     Y = random(0, 1920)
 
      let spriteWidth = selectedSprite.animation.walkUp[3]
      let spriteHeight = selectedSprite.animation.walkUp[2]
 
     inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
+    console.log(X)
 
   } while (inDungeon === false ||
       !( X < playerLocation.X -200 || X > playerLocation.X + 200)
@@ -42,7 +44,8 @@ console.log(enemyArray)
 return(enemyArray)
 };
 
-genObjectArray = (dungeonArray, objects, objectPicArray) => {  //generate objects. only health at moment
+genObjectArray = ({dungeonArray, objects, objectPicArray, canvasDimension}) => {  //generate objects. only health at moment
+
   let objectArray = []
   for (let i=0; i< objects; i++) {
 
@@ -52,8 +55,8 @@ genObjectArray = (dungeonArray, objects, objectPicArray) => {  //generate object
 
 
   do {        //pick a random co-ordinate
-     X = random(0, maximumX)
-     Y = random(0, maximumY)
+    X = random(0, canvasDimension.width)
+    Y = random(0, canvasDimension.height)
 
      let spriteWidth = tileSize
      let spriteHeight = tileSize

@@ -1,4 +1,4 @@
-let lastUpdate;
+let lastUpdate;  //why global?
 
 let updatePos = (personArray, person, timeDiff) => {
  let position = personArray[person]

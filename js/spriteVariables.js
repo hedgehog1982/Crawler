@@ -1,4 +1,4 @@
-let  viewport = {        }
+//let  viewport = {        }
 
 //function to generate array of images with src
 //list of assets that need caching in browser
@@ -60,7 +60,8 @@ const dungeonLavaImages = [
 const spriteArrayImages = [
   'spriteMaps/jake.png',
   'spriteMaps/cinn2.png',
-  'spriteMaps/cinnRED.png'
+  'spriteMaps/cinnRED.png',
+  'spriteMaps/full.png'
 ]
 
 const jake = {
@@ -94,6 +95,37 @@ const jake = {
              }
 };
 
+const finn = {
+    frameRate : 4,
+    walkRate : 130,
+    animation : {
+                 walkDown:[
+                  42,129,23,40,
+                  72,127,21,42,
+                  102,129,21,40,
+                  72,127,21,42
+                ],
+                walkUp:[
+                  42,264,23,40,
+                  72,264,21,42,
+                  102,264,21,40,
+                  72,264,21,42
+               ],
+               walkRight:[
+                37,172,30,41,
+                69,170,25,43,
+                98,172,30,41,
+                69,170,25,43
+              ],
+              walkLeft:[
+                37,219,30,41,
+                69,217,25,43,
+                98,219,30,41,
+                69,217,25,43
+             ]
+             }
+};
+
 const cinn = {
   frameRate : 4,
   walkRate : 90,
@@ -111,16 +143,17 @@ const cinn = {
                90, 168,36,41
              ],
              walkRight:[
+              99,67,30,42,
               54,69,30,40,
               99,67,30,42,
               140,69,30,40,
-              99,67,30,42
             ],
             walkLeft:[
+             94,117,30,42,
              54,119,30,40,
              94,117,30,42,
              134,119,30,40,
-             94,117,30,42
+
            ]
            }
 }

@@ -4,7 +4,7 @@ import ReactDOM from "react-dom"
 import {Player, EnemyDisplay} from "./components/player.js"  //react component that handles player and enemy sprites
 import {Dungeon} from "./components/dungeon.js" // react component that hand dungeon images (Lava, floor and Wall)
 import {Items} from "./components/items.js"  //react component that handles health items and eventually weapons
-import {Won, Lost, LoadScreen} from "./components/screens.js" // react component for win / loss / loading screen
+import {Won, Lost, LoadScreen, PlayerSelect} from "./components/screens.js" // react component for win / loss / loading screen
 import {GameTitle, HUD, Shroud} from "./components/onScreen.js" //react component - title screen , HUD and shroud
 
 class Game extends React.Component {
@@ -13,37 +13,33 @@ class Game extends React.Component {
     super(props);
 
     lastUpdate = new Date().getTime()  //last update for working out distance travelled
+    let canvasDimension = {height : 1920 , width : 1920}
 
-    //generate dungeon
-    let rooms = 6                               //amount of rooms to generate
-    let dungeonArray = []
-    dungeonArray = generateRooms(rooms,maximumX ,maximumY)  // maximumX and maximumY are a global variable, not sure thats the right thing to do... definitly no need to pass it if it is
-
-    //place hero within dungeon
+    let dungeonArray = generateRooms({rooms : 6, canvasDimension : canvasDimension})  //     //generate dungeon maximumX and maximumY are a global variable, not sure thats the right thing to do... definitly no need to pass it if it is
+    let selectedSprite
+    //place hero within dungeon // check to see if
     let inDungeon = false
-    let selectedSprite = jake     //contains sprite map
-    selectedSprite.src = this.props.spriteArray[0].src  //pass the loaded source in
+    if (this.props.selectedPlayer === "jake"){
+      selectedSprite = jake
+          selectedSprite.src = this.props.spriteArray[0].src  //pass the loaded source in
+    } else {
+      selectedSprite = JSON.parse(JSON.stringify(finn))
+      selectedSprite.src = this.props.spriteArray[3].src  //pass the loaded source in
+    }
+
     let X, Y
     do {
-       X = random(0, maximumX)                //generate random X and Y
-       Y = random(0, maximumY)
+       X = random(0, canvasDimension.width)                //generate random X and Y
+       Y = random(0, canvasDimension.height)
        let spriteWidth = selectedSprite.animation.walkUp[3]         //widest sprite points
        let spriteHeight = selectedSprite.animation.walkUp[2]
       inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
 
     } while (inDungeon === false)
 
-    //populate dungeon with enemies
-    let playerLocation = {X : X, Y : Y}
-    let enemies = 12                                         //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
-    let enemyArray = genEnemyArray (dungeonArray, enemies, this.props.spriteArray, playerLocation)    // pass the src in for cinn, this way its been cached, at the minute this can be placed next to hero, dont want that
-
-    //populate power-up                                         //eventually want to add weapons and armour. function allows this
-    let objects = 6
-    let objectArray = genObjectArray(dungeonArray, objects, this.props.itemArray)
-
-    let blankGraveArray = []        //doing this here rather than in setstate as eventually want to pull everything out as function (Allow easy set up on new game / new level)
-
+                                //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
+    let enemyArray = genEnemyArray ({dungeonArray, enemies : 12, spriteArray : this.props.spriteArray, playerLocation: {X : X, Y : Y}, canvasDimension : canvasDimension})    // generate enemies
+    let objectArray = genObjectArray({dungeonArray, objects : 6, objectPicArray : this.props.itemArray, canvasDimension })  //generate objects
 
     this.onClick = this.onClick.bind(this);
       this.state = {
@@ -63,22 +59,14 @@ class Game extends React.Component {
 
           enemyArray : enemyArray, // enemyArray,
           objectArray : objectArray,
-          graveArray : blankGraveArray
+          graveArray : [],  //a blank array
+          canvasDimension : canvasDimension
     }
   }
 
 
  componentDidMount = () => {  //update positions  50 times a second
       this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)  //
-
-      let wrapper = document.getElementById("wrapper")      //move wrapper above plater
-            wrapper.scrollTop = Math.round(this.state.playerPosition.locationY - viewport.height /2);  //round to smooth movement?
-            wrapper.scrollLeft = Math.round(this.state.playerPosition.locationX - viewport.width / 2);
-
-  };
-
-  componentWillUnmount = () => {
-    clearInterval(this.interval);         //when we unmount clear the function that updates the positions
   };
 
   componentWillMount = () => {  //if its mounted listen for key presses
@@ -87,6 +75,7 @@ class Game extends React.Component {
 
 
   updateAllPosition = () => {  //update position --- needs speeding up
+
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
     //console.log(Math.round(1000 /  (timeDiff)), "FPS")
@@ -109,7 +98,6 @@ class Game extends React.Component {
 
 
     for(let person = 0; person < joinedArray.length ; person++){      // pass into my function to work out distances moved
-      //an ideal place to check if within viewport, if its not then no point updating
       let personPosition = joinedArray[person]
       if ((personPosition.locationX < maximumX && personPosition.locationX > minimumX) && (personPosition.locationY < maximumY && personPosition.locationY > minimumY)){
                   updatePos(joinedArray, person ,timeDiff)
@@ -195,60 +183,61 @@ class Game extends React.Component {
   };
 
   render() {
-       let wrapper = document.getElementById("wrapper")   // this wrapper is what gets moved around
-
-       let gameState = null                       //game state is dynamically rendered
-       if (this.state.enemyArray.length === 0 && this.state.playerPosition.health[0] !==0){     // all enemies dead - array is zero - you have won
+     let {enemyArray, playerPosition, canvasDimension, dungeonArray, graveArray, objectArray, radius} = this.state
+     let {dungeonFloorArray, dungeonLavaArray, dungeonWallArray} = this.props
+       let wrapper = document.getElementById("wrapper"),   // this wrapper is what gets moved around
+          viewport = {},
+          gameState = null                       //game state is dynamically rendered
+       if (enemyArray.length === 0 && playerPosition.health[0] !==0){     // all enemies dead - array is zero - you have won
+          clearInterval(this.interval); //not sure this is the bext place for it
        gameState = (
             <Won />
          )
-       } else if (this.state.playerPosition.health[0] === 0){             // health at zero. you have lost
+       } else if (playerPosition.health[0] === 0){             // health at zero. you have lost
+         clearInterval(this.interval);
          gameState = (
            <Lost />
          )
        } else {                                 //otherwise game still going // this is monsterous and needs seperatin ideally
                                                 //highest points rendered at bottom // hence dungeon first
-  //bit hacky
-         //  let wrapper = document.getElementById("wrapper")
+
          if (wrapper !== null) { //gets generated after first call
            viewport.width = wrapper.offsetWidth
            viewport.height = wrapper.offsetHeight
-           wrapper.scrollTop = Math.round(this.state.playerPosition.locationY - viewport.height /2);  //round to smooth movement?
-           wrapper.scrollLeft = Math.round(this.state.playerPosition.locationX - viewport.width / 2);
+           wrapper.scrollTop = Math.round(playerPosition.locationY - viewport.height /2);  //round to smooth movement?
+           wrapper.scrollLeft = Math.round(playerPosition.locationX - viewport.width / 2);
          }
          let wrapperX = wrapper === null ? 0 : wrapper.scrollLeft
          let wrapperY = wrapper === null ? 0 : wrapper.scrollTop
 
-
-
          gameState =
-           <Stage className={"wrapper"} width={maximumX} height={maximumY}>
+           <Stage className={"wrapper"} width={canvasDimension.width} height={canvasDimension.height}>
                <Layer hitGraphEnabled={false} listening={false}>
           <Group>
-             <Dungeon dungeonArray={this.state.dungeonArray}
-                      dungeonFloorArray={this.props.dungeonFloorArray}
-                      dungeonLavaArray={this.props.dungeonLavaArray}
-                      dungeonWallArray={this.props.dungeonWallArray}
-
+             <Dungeon dungeonArray={dungeonArray}
+                      dungeonFloorArray={dungeonFloorArray}
+                      dungeonLavaArray={dungeonLavaArray}
+                      dungeonWallArray={dungeonWallArray}
                />
-             <Items items={this.state.graveArray} />
-             <Items items={this.state.objectArray} />
+             <Items items={graveArray} />
+             <Items items={objectArray} />
              <Player
-                       playerGraphics={this.state.playerPosition.sprite}
-                       positionX={this.state.playerPosition.locationX}
-                       positionY={this.state.playerPosition.locationY}
-                       direction={this.state.playerPosition.direction}
-                       health={this.state.playerPosition.health}
+                       playerGraphics={playerPosition.sprite}
+                       positionX={playerPosition.locationX}
+                       positionY={playerPosition.locationY}
+                       direction={playerPosition.direction}
+                       health={playerPosition.health}
                />
-               <EnemyDisplay enemyArray={this.state.enemyArray} />
-               <Shroud radius={this.state.radius}
-                 x={this.state.playerPosition.locationX}
-                 y={this.state.playerPosition.locationY}
+               <EnemyDisplay enemyArray={enemyArray} />
+               <Shroud radius={radius}
+                 x={playerPosition.locationX}
+                 y={playerPosition.locationY}
                 />
               <HUD wrapperX = {wrapperX}
                    wrapperY= {wrapperY}
-                   playerPosition= {this.state.playerPosition}
-                   enemyArrayLength={this.state.enemyArray.length}
+                   playerPosition= {playerPosition}
+                   enemyArrayLength={enemyArray.length}
+                   viewport={viewport}
               />
 
 
@@ -271,6 +260,8 @@ class App extends React.Component { //ready for cache
   constructor (props){
     super(props)
 
+    this.selectAPlayer = this.selectAPlayer.bind(this);
+
     this.state = {
         loadedImages : 0,
         amountToLoad : 5,
@@ -278,71 +269,87 @@ class App extends React.Component { //ready for cache
         dungeonWallArray : new Array(dungeonWallImages.length),
         dungeonLavaArray : new Array(dungeonLavaImages.length),
         spriteArray : new Array(spriteArrayImages.length),
-        itemArray : new Array(itemImages.length)
+        itemArray : new Array(itemImages.length),
+        selectedPlayer : false
+
     }
   }
 
 componentDidMount = () => {  ///THIS IS NOT DRY,,, UGH
 
-  let {dungeonFloorArray, dungeonWallArray, dungeonLavaArray, spriteArray, itemArray} = this.state
+  let {dungeonFloorArray, dungeonWallArray, dungeonLavaArray, spriteArray, itemArray, loadedImages} = this.state
+  let currentLoaded = 0
 
   generateImage(dungeonFloorArray, dungeonFloorImages).then((filledArray) => {
-    let loadedImages = this.state.loadedImages + 1; //add 1 to state
-    console.log("Downloaded dungeon floor array", loadedImages)
-    this.setState({loadedImages: loadedImages,
+    currentLoaded ++; //add 1 to state
+    console.log("Downloaded dungeon floor array", currentLoaded)
+    this.setState({loadedImages: currentLoaded,
                    dungeonFloorArray : filledArray
       })
       this.forceUpdate()      //not sure i need this but not updating eitherway so have left it in
   });
 
   generateImage(dungeonWallArray, dungeonWallImages).then((filledArray) => {
-    let loadedImages = this.state.loadedImages + 1;
-    console.log("Downloaded dungeon Wall array", loadedImages)
-    this.setState({loadedImages: loadedImages,
+    //let loadedImages = this.state.loadedImages + 1;
+    currentLoaded ++;
+    console.log("Downloaded dungeon Wall array", currentLoaded)
+    this.setState({loadedImages: currentLoaded,
                    dungeonWallArray : filledArray
     })
     this.forceUpdate()
   });
 
   generateImage(dungeonLavaArray, dungeonLavaImages).then((filledArray) => {
-    let loadedImages = this.state.loadedImages + 1;
-    console.log("Downloaded dungeon Lava array", loadedImages)
-    this.setState({loadedImages: loadedImages,
+    //let loadedImages = this.state.loadedImages + 1;
+    currentLoaded ++;
+    console.log("Downloaded dungeon Lava array", currentLoaded)
+    this.setState({loadedImages: currentLoaded,
                   dungeonLavaArray : filledArray
     })
     this.forceUpdate()
   });
 
   generateImage(spriteArray, spriteArrayImages).then((filledArray) => {
-    let loadedImages = this.state.loadedImages + 1;
-    console.log("Downloaded Sprites", loadedImages)
-    this.setState({loadedImages: loadedImages,
+    //let loadedImages = this.state.loadedImages + 1;
+    currentLoaded ++;
+    console.log("Downloaded Sprites", currentLoaded)
+    this.setState({loadedImages: currentLoaded,
                   spriteArray : filledArray
     })
     this.forceUpdate()
   });
 
   generateImage(itemArray, itemImages).then((filledArray) => {
-    let loadedImages = this.state.loadedImages + 1;
-    console.log("Downloaded Items", loadedImages)
-    this.setState({loadedImages: loadedImages,
+    //let loadedImages = this.state.loadedImages + 1;
+    currentLoaded ++;
+    console.log("Downloaded Items", currentLoaded )
+    this.setState({loadedImages:  currentLoaded,
                   itemArray : filledArray
     })
     this.forceUpdate()
   });
 };
 
+ selectAPlayer = (player) => {
+        console.log("You clicked ", player)
+        this.setState({selectedPlayer : player})
+  };
+
   render() {
 
          let toRender
     if (this.state.amountToLoad === this.state.loadedImages){       //all fully cached render game
-      toRender = ( <Game {...this.state}     />)
+      if (this.state.selectedPlayer === false){
+        toRender = <PlayerSelect selectAPlayer={this.selectAPlayer} />
+      } else {
+        toRender =  <Game {...this.state} />
+      }
 
     } else {      //else wait
       toRender = (
          <LoadScreen
             loadedImages = {this.state.loadedImages}
-            amountToLoad ={this.state.amountToLoad}
+            amountToLoad = {this.state.amountToLoad}
            />
        )}
 
