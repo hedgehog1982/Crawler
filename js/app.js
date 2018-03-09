@@ -1,30 +1,55 @@
-import {Layer, Sprite, Rect, Stage, Group, Circle, Text} from 'react-konva'; //import from konva-react
 import React from "react"
 import ReactDOM from "react-dom"
-import {Player, EnemyDisplay} from "./components/player.js"  //react component that handles player and enemy sprites
-import {Dungeon} from "./components/dungeon.js" // react component that hand dungeon images (Lava, floor and Wall)
-import {Items} from "./components/items.js"  //react component that handles health items and eventually weapons
+//import {Player, EnemyDisplay} from "./components/player.js"  //react component that handles player and enemy sprites
+import {dungeonCanvas} from "./components/dungeon.js" // react component that hand dungeon images (Lava, floor and Wall)
+//import {Items} from "./components/items.js"  //react component that handles health items and eventually weapons
 import {Won, Lost, LoadScreen, PlayerSelect} from "./components/screens.js" // react component for win / loss / loading screen
-import {GameTitle, HUD, Shroud} from "./components/onScreen.js" //react component - title screen , HUD and shroud
+import {GameTitle,  preDrawShroud} from "./components/onScreen.js" //react component - title screen , HUD and shroud
+
+let cachedDungeon  // cached dungeon background to speed up render
+
+let newEnemy   //enemy array for new rendering
+let newObject //new object array
+let canvasPlayer
+let newGraveArray = []
+
+let cachedShroud
+let frameNum = 0
 
 class Game extends React.Component {
 
   constructor(props) {
     super(props);
 
+
+
+    let {dungeonFloorArray, dungeonLavaArray, dungeonWallArray, itemArray, spriteArray} = this.props
+        console.log(itemArray)
+
     lastUpdate = new Date().getTime()  //last update for working out distance travelled
     let canvasDimension = {height : 1920 , width : 1920}
 
-    let dungeonArray = generateRooms({rooms : 6, canvasDimension : canvasDimension})  //     //generate dungeon maximumX and maximumY are a global variable, not sure thats the right thing to do... definitly no need to pass it if it is
+    let dungeonArray = generateRooms({rooms  : 6, canvasDimension})  //     //generate dungeon maximumX and maximumY are a global variable, not sure thats the right thing to do... definitly no need to pass it if it is
+
+    //going to start to use canvas without a framework over the top, will draw both at same time for now
+    cachedDungeon = dungeonCanvas ({dungeonArray, dungeonFloorArray, dungeonLavaArray, dungeonWallArray,canvasDimension})
+
+    cachedShroud = preDrawShroud()
+
+
+    console.log(cachedDungeon)
+
     let selectedSprite
     //place hero within dungeon // check to see if
     let inDungeon = false
     if (this.props.selectedPlayer === "jake"){
       selectedSprite = jake
-          selectedSprite.src = this.props.spriteArray[0].src  //pass the loaded source in
+      selectedSprite.img = 0
+          selectedSprite.src = spriteArray[0].src  //pass the loaded source in
     } else {
       selectedSprite = JSON.parse(JSON.stringify(finn))
-      selectedSprite.src = this.props.spriteArray[3].src  //pass the loaded source in
+      selectedSprite.img = 3
+      selectedSprite.src = spriteArray[3].src  //pass the loaded source in
     }
 
     let X, Y
@@ -37,29 +62,33 @@ class Game extends React.Component {
 
     } while (inDungeon === false)
 
-                                //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
-    let enemyArray = genEnemyArray ({dungeonArray, enemies : 12, spriteArray : this.props.spriteArray, playerLocation: {X : X, Y : Y}, canvasDimension : canvasDimension})    // generate enemies
-    let objectArray = genObjectArray({dungeonArray, objects : 6, objectPicArray : this.props.itemArray, canvasDimension })  //generate objects
+    canvasPlayer =             {
+                                      name : "player",
+                                      locationX : X,
+                                      locationY : Y,
+                                      direction : "walkUp",
+                                      sprite : selectedSprite,
+                                      health : [200 , 200],
+                                      attack : 20,
+                                      defense : 10,
+                                      level : 1
+                                    }
+
+    //hardcoded amount of enemies, would like this accesible ( many levels, more enemies per level?)
+    newEnemy = genEnemyArray ({dungeonArray, enemies : 12, spriteArray : this.props.spriteArray, playerLocation: {X : X, Y : Y}, canvasDimension : canvasDimension})    // generate enemies
+    newObject = genObjectArray({dungeonArray, objects : 6, objectPicArray : this.props.itemArray, canvasDimension })  //generate objects
+
+    // for new Canvas Rendeing
+
 
     this.onClick = this.onClick.bind(this);
       this.state = {
            radius : 150,
            dungeonArray : dungeonArray,                   // x , y , width, height
-            playerPosition : {
-            name : "player",
-            locationX : X,
-            locationY : Y,
-            direction : "walkUp",
-            sprite : selectedSprite,
-            health : [200 , 200],
-            attack : 20,
-            defense : 10,
-            level : 1
-          },
-
-          enemyArray : enemyArray, // enemyArray,
-          objectArray : objectArray,
-          graveArray : [],  //a blank array
+          playerPosition : canvasPlayer,
+          enemyArray : newEnemy, // enemyArray,
+          objectArray : newObject,
+          graveArray : newGraveArray,  //a blank array
           canvasDimension : canvasDimension
     }
   }
@@ -67,23 +96,47 @@ class Game extends React.Component {
 
  componentDidMount = () => {  //update positions  50 times a second
       this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)  //
+      this.interval = setInterval(this.keyFrame, 250)
+
+      //rendered divs at this point
+      let can = document.getElementById("canvasBackground");
+      let ctx = can.getContext('2d');
+      ctx.drawImage(cachedDungeon, 0, 0);
+
+     let title = document.getElementById('gameTitle')
+
+      document.getElementById('canvasHUD').style.top = (title.offsetHeight + 40) + "px"
   };
 
   componentWillMount = () => {  //if its mounted listen for key presses
     document.addEventListener("keydown", this.handleKeyPress)
     };
 
+  keyFrame = () => {  // keep track of current frame. sure their an easier way. ternary
+      if (frameNum === 3) {
+        frameNum = 0
+      } else {
+        frameNum++
+      }
+  }
+
 
   updateAllPosition = () => {  //update position --- needs speeding up
 
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
-    //console.log(Math.round(1000 /  (timeDiff)), "FPS")
+    let fps = (Math.round(1000 /  (timeDiff)) + "FPS")
 
   //make duplicate of arrays so not altering directly
-  let joinedArray = JSON.parse(JSON.stringify(this.state.enemyArray))
-  let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
-  let itemArrayCopy = JSON.parse(JSON.stringify(this.state.objectArray))
+
+  let  joinedArray = JSON.parse(JSON.stringify(newEnemy))
+  let  playerCopy = JSON.parse(JSON.stringify(canvasPlayer))
+  let  itemArrayCopy = JSON.parse(JSON.stringify(newObject))
+  let  graveArrayCopy = JSON.parse(JSON.stringify(newGraveArray))
+
+
+  //for using new canvasDimension
+
   let updated = 0     //keep track of the amount of updates
 
     //check if in dungeon or touching enemy
@@ -91,10 +144,10 @@ class Game extends React.Component {
 
     let minBoundary = 50; //stop players on the edge of the boundary just popping into existence
     //only check movement of things that have move within player view
-    let minimumX = this.state.playerPosition.locationX - minBoundary - (2 * this.state.radius)
-    let maximumX = this.state.playerPosition.locationX + minBoundary + (2 * this.state.radius)
-    let minimumY = this.state.playerPosition.locationY - minBoundary - (2 * this.state.radius)
-    let maximumY = this.state.playerPosition.locationY + minBoundary + (2 * this.state.radius)
+    let minimumX = playerCopy.locationX - minBoundary - (2 * this.state.radius)
+    let maximumX = playerCopy.locationX + minBoundary + (2 * this.state.radius)
+    let minimumY = playerCopy.locationY - minBoundary - (2 * this.state.radius)
+    let maximumY = playerCopy.locationY + minBoundary + (2 * this.state.radius)
 
 
     for(let person = 0; person < joinedArray.length ; person++){      // pass into my function to work out distances moved
@@ -102,7 +155,8 @@ class Game extends React.Component {
       if ((personPosition.locationX < maximumX && personPosition.locationX > minimumX) && (personPosition.locationY < maximumY && personPosition.locationY > minimumY)){
                   updatePos(joinedArray, person ,timeDiff)
                   updated ++
-      } else {
+      } else {  //what was i going to put in here?
+
       }
     }
 
@@ -110,7 +164,9 @@ class Game extends React.Component {
 
     //remove dead players (eventually check player is dead?)
     let cleanedArray = []
-    let graveArrayCopy = JSON.parse(JSON.stringify(this.state.graveArray))
+    let can = document.getElementById("canvasBackground");
+    let ctx = can.getContext('2d');
+
     joinedArray.map((enemy) => {
 
         if (enemy.health[0] !== 0){ //if its alive add it back to array
@@ -123,6 +179,10 @@ class Game extends React.Component {
             locationY : Math.round(enemy.locationY),
             img : graveObject[0]
           })
+
+          //draw grave on canvasBackground, do it here as we then only do it once and then its done
+          console.log("draw Grave")
+          ctx.drawImage(graveObject[0], Math.round(enemy.locationX), Math.round(enemy.locationY));
 
 
           if (graveArrayCopy.length % 4 === 0){  // if we have added a grave and its a multiple of 4 then up the level and give a health boost
@@ -138,25 +198,110 @@ class Game extends React.Component {
       let cleanedItem = touchingItems(newPlayer, itemArrayCopy)
 
       //update states
-        this.setState({  playerPosition : newPlayer}) //always update player state
-      if (graveArrayCopy.length !== this.state.graveArray.length){  //only update graveArray if its changed
-        this.setState({graveArray : graveArrayCopy})
-      }
-
-      if (cleanedItem.length !==this.state.objectArray.length ){ //only update if its been added to
-                this.setState({objectArray : cleanedItem})
-      }
-
-      if (updated !== 1) {  //if we updated the enemy array set that state
-        this.setState({enemyArray : cleanedArray})
-      }
-      this.setState({  playerPosition : newPlayer})
+      newEnemy  = cleanedArray
+      newObject = cleanedItem
+      canvasPlayer = newPlayer
+      newGraveArray = graveArrayCopy
       lastUpdate = currentTime
+
+  // get where we are currently scrolled to
+      let newWrapper = document.getElementById("divCanvas")
+      let wrapperX = newWrapper === null ? 0 : newWrapper.scrollLeft
+      let wrapperY = newWrapper === null ? 0 : newWrapper.scrollTop
+
+   ////  for updating our new shiny canvas //drawing bottom to top
+       can = document.getElementById("canvasForeground");
+       ctx = can.getContext('2d');
+
+      ctx.clearRect(0,0,1920,1920)   // draw our cached dungeon rather than re-rendering
+
+
+      //draw Items  //cache these at some point?
+      cleanedItem.forEach(item => {
+        ctx.drawImage(this.props.itemArray[item.imgItem], item.locationX, item.locationY);
+      })
+
+      //draw player
+      //ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+      let {spriteArray} = this.props
+      let {animation} = newPlayer.sprite
+      let keyFrame = frameNum * 4
+
+      //draw health bar
+      //ctx.fillStyle= "white"
+      //ctx.fillRect(20,20,150,100);
+      //ctx.fillStyle = "green"
+
+
+      //draw sprite
+      let sx = animation[newPlayer.direction][keyFrame + 0] ,
+          sy = animation[newPlayer.direction][keyFrame + 1],
+          sWidth = animation[newPlayer.direction][keyFrame + 2],
+          sHeight = animation[newPlayer.direction][keyFrame + 3]
+
+      ctx.drawImage(spriteArray[newPlayer.sprite.img],
+              sx, sy, sWidth, sHeight,
+               newPlayer.locationX,
+               newPlayer.locationY,
+              sWidth, sHeight  );  // keep aspect ration
+
+    // draw enemies
+          cleanedArray.forEach(enemy => {
+            let animation = enemy.sprite.animation
+            let sx = animation[enemy.direction][keyFrame + 0] ,
+                sy = animation[enemy.direction][keyFrame + 1],
+                sWidth = animation[enemy.direction][keyFrame + 2],
+                sHeight = animation[enemy.direction][keyFrame + 3]
+
+            ctx.drawImage(spriteArray[enemy.sprite.img],
+                    sx, sy, sWidth, sHeight,
+                     enemy.locationX,
+                     enemy.locationY,
+                    sWidth, sHeight  );  // keep aspect ration
+
+          })
+
+    // draw shroud, 2 circles.
+           if (shroud === true){
+       ctx.drawImage(cachedShroud, -1000 + newPlayer.locationX, -1000 + newPlayer.locationY);
+     }
+
+       //draw Text fill in red
+       can = document.getElementById("canvasHUD");
+       ctx = can.getContext('2d');
+       ctx.clearRect(0,0,300,300)
+       ctx.font = "20px creepy";
+       ctx.fillStyle = "#6d0606";
+       ctx.fillText(newPlayer.health[1] + " / " + newPlayer.health[0] + "HP" ,0, 15);
+       ctx.fillText(newPlayer.attack + "AP",0, 40);
+       ctx.fillText(newPlayer.defense +"DP",0, 65);
+       ctx.fillText(cleanedArray.length + "Enemies",0, 90);
+       ctx.fillText("Current Level" + newPlayer.level ,0, 115);
+       ctx.fillText(fps ,0, 140);
+
+
+
+
+      /*   ctx.font = "20px creepy";
+         ctx.fillStyle = "#6d0606";
+         ctx.fillText(newPlayer.health[1] + " / " + newPlayer.health[0] + "HP" ,wrapperX, wrapperY + 15);
+         ctx.fillText(newPlayer.attack + "AP",wrapperX, wrapperY + 40);
+         ctx.fillText(newPlayer.defense +"DP",wrapperX, wrapperY + 65);
+         ctx.fillText(cleanedArray.length + "Enemies",wrapperX, wrapperY + 90);
+         ctx.fillText("Current Level" + newPlayer.level ,wrapperX, wrapperY + 115);
+         ctx.fillText(fps ,wrapperX, wrapperY + 140);
+        */
+
+
+         newWrapper.scrollTop = Math.round(newPlayer.locationY - newWrapper.offsetHeight /2);  //round to smooth movement?
+         newWrapper.scrollLeft = Math.round(newPlayer.locationX - newWrapper.offsetWidth / 2);
+
 
   };
 
   handleKeyPress = (event) => {  //handle direction from key press
-        let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
+    let  playerCopy = JSON.parse(JSON.stringify(canvasPlayer))
+
       if (event.key == "ArrowLeft" ) {
         playerCopy.direction = "walkLeft"
       } else if  (event.key == "ArrowRight") {
@@ -168,24 +313,25 @@ class Game extends React.Component {
       } else {
         playerCopy.direction = playerPosition.direction
       }
-      if (this.state.playerPosition !== playerCopy.direction){ //only update if a different key is pressed
-               this.setState({playerPosition : playerCopy })
-      }
+
+        canvasPlayer.direction = playerCopy.direction
+
+
 
   };
 
   onClick = (e) => {    //handle direction from button press
-    let playerCopy = JSON.parse(JSON.stringify(this.state.playerPosition))
-    playerCopy.direction = e.target.id
-    this.setState({
-      playerPosition : playerCopy
-    })
+    canvasPlayer.direction = e.target.id
+  //  let playerCopy = JSON.parse(JSON.stringify(canvasPlayer))
+  //  playerCopy.direction = e.target.id
+  //  canvasPlayer = playerCopy
   };
 
   render() {
      let {enemyArray, playerPosition, canvasDimension, dungeonArray, graveArray, objectArray, radius} = this.state
      let {dungeonFloorArray, dungeonLavaArray, dungeonWallArray} = this.props
        let wrapper = document.getElementById("wrapper"),   // this wrapper is what gets moved around
+           newWrapper = document.getElementById("divCanvas"),
           viewport = {},
           gameState = null                       //game state is dynamically rendered
        if (enemyArray.length === 0 && playerPosition.health[0] !==0){     // all enemies dead - array is zero - you have won
@@ -198,57 +344,42 @@ class Game extends React.Component {
          gameState = (
            <Lost />
          )
-       } else {                                 //otherwise game still going // this is monsterous and needs seperatin ideally
-                                                //highest points rendered at bottom // hence dungeon first
-
-         if (wrapper !== null) { //gets generated after first call
+       } else {
+          //otherwise game still going
+                                                     if (wrapper !== null) { //gets generated after first call
            viewport.width = wrapper.offsetWidth
            viewport.height = wrapper.offsetHeight
            wrapper.scrollTop = Math.round(playerPosition.locationY - viewport.height /2);  //round to smooth movement?
            wrapper.scrollLeft = Math.round(playerPosition.locationX - viewport.width / 2);
+           divCanvas.scrollTop = Math.round(playerPosition.locationY - viewport.height /2);  //round to smooth movement?
+           divCanvas.scrollLeft = Math.round(playerPosition.locationX - viewport.width / 2);
          }
+
          let wrapperX = wrapper === null ? 0 : wrapper.scrollLeft
          let wrapperY = wrapper === null ? 0 : wrapper.scrollTop
 
-         gameState =
-           <Stage className={"wrapper"} width={canvasDimension.width} height={canvasDimension.height}>
-               <Layer hitGraphEnabled={false} listening={false}>
-          <Group>
-             <Dungeon dungeonArray={dungeonArray}
-                      dungeonFloorArray={dungeonFloorArray}
-                      dungeonLavaArray={dungeonLavaArray}
-                      dungeonWallArray={dungeonWallArray}
-               />
-             <Items items={graveArray} />
-             <Items items={objectArray} />
-             <Player
-                       playerGraphics={playerPosition.sprite}
-                       positionX={playerPosition.locationX}
-                       positionY={playerPosition.locationY}
-                       direction={playerPosition.direction}
-                       health={playerPosition.health}
-               />
-               <EnemyDisplay enemyArray={enemyArray} />
-               <Shroud radius={radius}
-                 x={playerPosition.locationX}
-                 y={playerPosition.locationY}
-                />
-              <HUD wrapperX = {wrapperX}
-                   wrapperY= {wrapperY}
-                   playerPosition= {playerPosition}
-                   enemyArrayLength={enemyArray.length}
-                   viewport={viewport}
-              />
-
-
-              </Group>
-            </Layer>
-          </Stage>
+         gameState =   (
+           <div>
+           <div id="divCanvas" className="wrapper">
+           <div id="canvasContainer">
+             <canvas id="canvasBackground" width="1920" height="1920" />
+             <canvas id="canvasForeground" width="1920" height="1920" />
+             <canvas id="canvasHUD" width="300" height="300" />
+             </div>
+           </div>
+              <div>
+               <button onClick={this.onClick} id="walkUp">UP</button>
+               <button onClick={this.onClick} id="walkDown">DOWN</button>
+               <button onClick={this.onClick} id="walkLeft">LEFT</button>
+               <button onClick={this.onClick} id="walkRight">RIGHT</button>
+              </div>
+          </div>
+         )
        }
 
        // h6's are temporary, removed buttons as never going to be quick on movile, need to be a bit more polished
       return (
-       <div id={"wrapper"} className={"wrapper"}  >
+       <div   >
             {gameState}
       </div>
 

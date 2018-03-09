@@ -3,6 +3,9 @@
 //function to generate array of images with src
 //list of assets that need caching in browser
 
+let konvaview = false
+let shroud = true
+
 let generateImage = (blankArray, imageURL) => {
   return new Promise((resolve, reject) => {
     let imagesLoaded = 0

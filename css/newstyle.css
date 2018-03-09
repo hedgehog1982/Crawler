@@ -4,15 +4,55 @@
 }
 
 .wrapper {
-  border: 2px black solid;
   margin: 0 auto;
 }
 
+
 #wrapper{
-  height : 75vh;
-  width : 70vw;
+
   overflow : hidden;
 }
+
+#divCanvas{
+  height : 70vh;
+  width : 70vw;
+  position: relative;
+  overflow : hidden;
+}
+
+#canvasContainer{
+  height : 70vh;
+  width : 80vw;
+  overflow : hidden;
+
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+#canvasHUD{
+  left : 10vw;
+  top : 15vh;
+  position:fixed;
+}
+
+#canvasBackground{
+  z-index : 1;
+}
+
+#canvasForeground{
+   z-index : 2;
+}
+
+
+#canvasHUD{
+   z-index : 3;
+}
+
+
 
 .app{
   height : 90%;
@@ -83,7 +123,7 @@ body{
   margin-left : auto;
   margin-right: auto;
   margin-top : 20px;
-  margin-bottom : 15px;
+  margin-bottom : 20px;
   display : flex;
 }
 

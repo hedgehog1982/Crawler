@@ -10,6 +10,7 @@ Win/ loss screen (very basic)
 added HUD
 improved comments
 character select
+stopped using setstate and konva-react for components. Speed up of around 200%
 
 
 TODO -

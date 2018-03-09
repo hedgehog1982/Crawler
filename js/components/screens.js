@@ -1,4 +1,4 @@
-import {Text, Group} from 'react-konva';
+
 import React from "react"
 import ReactDOM from "react-dom"
 
