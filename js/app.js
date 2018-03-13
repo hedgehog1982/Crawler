@@ -1,28 +1,31 @@
 import React from "react"
 import ReactDOM from "react-dom"
-//import {Player, EnemyDisplay} from "./components/player.js"  //react component that handles player and enemy sprites
+import {drawSprite, healthBar} from "./components/player.js"  //react component that handles player and enemy sprites
 import {dungeonCanvas} from "./components/dungeon.js" // react component that hand dungeon images (Lava, floor and Wall)
-//import {Items} from "./components/items.js"  //react component that handles health items and eventually weapons
+import {itemsCanvas} from "./components/items.js"  //render items to canvas
 import {Won, Lost, LoadScreen, PlayerSelect} from "./components/screens.js" // react component for win / loss / loading screen
-import {GameTitle,  preDrawShroud} from "./components/onScreen.js" //react component - title screen , HUD and shroud
+import {GameTitle, Buttons,  preDrawShroud, HUDCanvas} from "./components/onScreen.js" //react component - title screen , HUD and shroud
 
-let cachedDungeon  // cached dungeon background to speed up render
+//canvas caches to speed up rendering (well thats the theory)
+let cachedDungeon,  // cached dungeon canvas to speed up render
+  //  cachedItemCanvas = document.createElement('canvas'), //cached items canva
+     cachedHUDCanvas = document.createElement('canvas'),  //cached HUD
+  //  cachedSpriteCanvas = document.createElement('canvas'), //cached sprites
+    cachedShroud = preDrawShroud(),
+    cachedHealthBar = healthBar({width : 40, height : 10})
 
 let newEnemy   //enemy array for new rendering
 let newObject //new object array
-let canvasPlayer
-let newGraveArray = []
+let canvasPlayer //player
+let newGraveArray = []  //graves
 
-let cachedShroud
 let frameNum = 0
+let globalID //for request animationFrame
 
 class Game extends React.Component {
 
   constructor(props) {
     super(props);
-
-
-
     let {dungeonFloorArray, dungeonLavaArray, dungeonWallArray, itemArray, spriteArray} = this.props
         console.log(itemArray)
 
@@ -33,9 +36,6 @@ class Game extends React.Component {
 
     //going to start to use canvas without a framework over the top, will draw both at same time for now
     cachedDungeon = dungeonCanvas ({dungeonArray, dungeonFloorArray, dungeonLavaArray, dungeonWallArray,canvasDimension})
-
-    cachedShroud = preDrawShroud()
-
 
     console.log(cachedDungeon)
 
@@ -78,34 +78,26 @@ class Game extends React.Component {
     newEnemy = genEnemyArray ({dungeonArray, enemies : 12, spriteArray : this.props.spriteArray, playerLocation: {X : X, Y : Y}, canvasDimension : canvasDimension})    // generate enemies
     newObject = genObjectArray({dungeonArray, objects : 6, objectPicArray : this.props.itemArray, canvasDimension })  //generate objects
 
-    // for new Canvas Rendeing
-
-
+    // pre render canvas
+      cachedHUDCanvas =  HUDCanvas({newPlayer: canvasPlayer, enemyQTY : newEnemy.length, fps : 0})
     this.onClick = this.onClick.bind(this);
+
       this.state = {
            radius : 150,
-           dungeonArray : dungeonArray,                   // x , y , width, height
-          playerPosition : canvasPlayer,
-          enemyArray : newEnemy, // enemyArray,
-          objectArray : newObject,
-          graveArray : newGraveArray,  //a blank array
+           playerState : "playing",
           canvasDimension : canvasDimension
     }
   }
 
-
  componentDidMount = () => {  //update positions  50 times a second
-      this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)  //
+      //this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)  //
+      globalID = requestAnimationFrame(this.updateAllPosition);
       this.interval = setInterval(this.keyFrame, 250)
 
       //rendered divs at this point
       let can = document.getElementById("canvasBackground");
       let ctx = can.getContext('2d');
       ctx.drawImage(cachedDungeon, 0, 0);
-
-     let title = document.getElementById('gameTitle')
-
-      document.getElementById('canvasHUD').style.top = (title.offsetHeight + 40) + "px"
   };
 
   componentWillMount = () => {  //if its mounted listen for key presses
@@ -121,23 +113,68 @@ class Game extends React.Component {
   }
 
 
-  updateAllPosition = () => {  //update position --- needs speeding up
+  updateAllPosition = () => {
+    let newWrapper = document.getElementById("divCanvas")
+    let wrapperX = newWrapper === null ? 0 : newWrapper.scrollLeft
+    let wrapperY = newWrapper === null ? 0 : newWrapper.scrollTop
+    newWrapper.scrollTop = Math.round(canvasPlayer.locationY - newWrapper.offsetHeight /2);  //round to smooth movement?
+    newWrapper.scrollLeft = Math.round(canvasPlayer.locationX - newWrapper.offsetWidth / 2);
 
+          let  can = document.getElementById("canvasForeground");
+          let  ctx = can.getContext("2d")
+
+           //fill canvas black and cut out a rectangle where the player is
+           ctx.fillStyle="black"
+           ctx.fillRect(0,0,1920,1920)
+
+           //new method for quick shroud?
+           ctx.save();
+           ctx.beginPath();
+           ctx.arc(Math.round(canvasPlayer.locationX), Math.round(canvasPlayer.locationY), 250, 0, Math.PI*2, true);
+           ctx.closePath();
+           ctx.clip();
+           ctx.clearRect(Math.round(canvasPlayer.locationX - 250),Math.round(canvasPlayer.locationY -250),500,500)
+
+           //draw Items
+           itemsCanvas({ctx, itemImages : this.props.itemArray, itemList : newObject , canvasDimension : this.state.canvasDimension})
+
+           //draw sprite
+           drawSprite({   ctx,
+                           cleanedArray : newEnemy,
+                           newPlayer : canvasPlayer ,
+                           cachedHealthBar,
+                           spriteArray : this.props.spriteArray,
+                           animation : canvasPlayer.sprite.animation,
+                           keyFrame : frameNum * 4,
+                           canvasDimension : this.state.canvasDimension});
+
+         // draw shroud, 2 circles.
+            if (shroud === true){
+            ctx.drawImage(cachedShroud, -1000 + canvasPlayer.locationX, -1000 + canvasPlayer.locationY);
+          }
+
+           ctx.restore();
+
+           //draw HUD on top
+           ctx.drawImage(cachedHUDCanvas, Math.round(canvasPlayer.locationX - (newWrapper.offsetWidth /2)) , Math.round(canvasPlayer.locationY - (newWrapper.offsetHeight /2)));  // draw cached items in one go from an offscreen canvas
+
+            // do this here after all rendering?
+            globalID = requestAnimationFrame(this.updateAllPosition);
+
+    //get new positions
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
     let fps = (Math.round(1000 /  (timeDiff)) + "FPS")
+    console.log(fps)
 
   //make duplicate of arrays so not altering directly
-
-  let  joinedArray = JSON.parse(JSON.stringify(newEnemy))
-  let  playerCopy = JSON.parse(JSON.stringify(canvasPlayer))
-  let  itemArrayCopy = JSON.parse(JSON.stringify(newObject))
-  let  graveArrayCopy = JSON.parse(JSON.stringify(newGraveArray))
-
+    let  joinedArray = JSON.parse(JSON.stringify(newEnemy))
+    let  playerCopy = JSON.parse(JSON.stringify(canvasPlayer))
+    let  itemArrayCopy = JSON.parse(JSON.stringify(newObject))
+    let  graveArrayCopy = JSON.parse(JSON.stringify(newGraveArray))
 
   //for using new canvasDimension
-
-  let updated = 0     //keep track of the amount of updates
+    let updated = 0     //keep track of the amount of updates
 
     //check if in dungeon or touching enemy
     joinedArray.push(playerCopy)    // make an array that is a combined enemy/ hero array
@@ -149,14 +186,14 @@ class Game extends React.Component {
     let minimumY = playerCopy.locationY - minBoundary - (2 * this.state.radius)
     let maximumY = playerCopy.locationY + minBoundary + (2 * this.state.radius)
 
-
-    for(let person = 0; person < joinedArray.length ; person++){      // pass into my function to work out distances moved
+    //work out where the players have moved in the time
+    for(let person = 0; person < joinedArray.length ; person++){
       let personPosition = joinedArray[person]
+
+      //only update if position close to player
       if ((personPosition.locationX < maximumX && personPosition.locationX > minimumX) && (personPosition.locationY < maximumY && personPosition.locationY > minimumY)){
                   updatePos(joinedArray, person ,timeDiff)
                   updated ++
-      } else {  //what was i going to put in here?
-
       }
     }
 
@@ -164,11 +201,12 @@ class Game extends React.Component {
 
     //remove dead players (eventually check player is dead?)
     let cleanedArray = []
-    let can = document.getElementById("canvasBackground");
-    let ctx = can.getContext('2d');
+
+    //if we have a dead player we are going to add the grave to the background canvas
+     can = document.getElementById("canvasBackground");
+     ctx = can.getContext('2d');
 
     joinedArray.map((enemy) => {
-
         if (enemy.health[0] !== 0){ //if its alive add it back to array
           cleanedArray.push(enemy)
         } else {  //if its dead add its location to graveArray
@@ -194,108 +232,25 @@ class Game extends React.Component {
         }
 
     })
-    //check if touching items
+    //check if player is touching items
       let cleanedItem = touchingItems(newPlayer, itemArrayCopy)
 
-      //update states
-      newEnemy  = cleanedArray
-      newObject = cleanedItem
-      canvasPlayer = newPlayer
-      newGraveArray = graveArrayCopy
-      lastUpdate = currentTime
-
-  // get where we are currently scrolled to
-      let newWrapper = document.getElementById("divCanvas")
-      let wrapperX = newWrapper === null ? 0 : newWrapper.scrollLeft
-      let wrapperY = newWrapper === null ? 0 : newWrapper.scrollTop
-
-   ////  for updating our new shiny canvas //drawing bottom to top
-       can = document.getElementById("canvasForeground");
-       ctx = can.getContext('2d');
-
-      ctx.clearRect(0,0,1920,1920)   // draw our cached dungeon rather than re-rendering
-
-
-      //draw Items  //cache these at some point?
-      cleanedItem.forEach(item => {
-        ctx.drawImage(this.props.itemArray[item.imgItem], item.locationX, item.locationY);
-      })
-
-      //draw player
-      //ctx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
-      let {spriteArray} = this.props
-      let {animation} = newPlayer.sprite
-      let keyFrame = frameNum * 4
-
-      //draw health bar
-      //ctx.fillStyle= "white"
-      //ctx.fillRect(20,20,150,100);
-      //ctx.fillStyle = "green"
-
-
-      //draw sprite
-      let sx = animation[newPlayer.direction][keyFrame + 0] ,
-          sy = animation[newPlayer.direction][keyFrame + 1],
-          sWidth = animation[newPlayer.direction][keyFrame + 2],
-          sHeight = animation[newPlayer.direction][keyFrame + 3]
-
-      ctx.drawImage(spriteArray[newPlayer.sprite.img],
-              sx, sy, sWidth, sHeight,
-               newPlayer.locationX,
-               newPlayer.locationY,
-              sWidth, sHeight  );  // keep aspect ration
-
-    // draw enemies
-          cleanedArray.forEach(enemy => {
-            let animation = enemy.sprite.animation
-            let sx = animation[enemy.direction][keyFrame + 0] ,
-                sy = animation[enemy.direction][keyFrame + 1],
-                sWidth = animation[enemy.direction][keyFrame + 2],
-                sHeight = animation[enemy.direction][keyFrame + 3]
-
-            ctx.drawImage(spriteArray[enemy.sprite.img],
-                    sx, sy, sWidth, sHeight,
-                     enemy.locationX,
-                     enemy.locationY,
-                    sWidth, sHeight  );  // keep aspect ration
-
-          })
-
-    // draw shroud, 2 circles.
-           if (shroud === true){
-       ctx.drawImage(cachedShroud, -1000 + newPlayer.locationX, -1000 + newPlayer.locationY);
+      //draw Text fill in red only draw if changed //cached new image
+      if (newPlayer.health[0] != canvasPlayer.health[0] ||
+           newPlayer.health[0] != canvasPlayer.health[0] ||
+         newPlayer.attack != canvasPlayer.attack ||
+       newPlayer.defense != canvasPlayer.defense ||
+       newPlayer.level != canvasPlayer.level ||
+       cleanedArray.length != newEnemy.length ) {
+       cachedHUDCanvas =  HUDCanvas({newPlayer, enemyQTY : cleanedArray.length, fps})
      }
 
-       //draw Text fill in red
-       can = document.getElementById("canvasHUD");
-       ctx = can.getContext('2d');
-       ctx.clearRect(0,0,300,300)
-       ctx.font = "20px creepy";
-       ctx.fillStyle = "#6d0606";
-       ctx.fillText(newPlayer.health[1] + " / " + newPlayer.health[0] + "HP" ,0, 15);
-       ctx.fillText(newPlayer.attack + "AP",0, 40);
-       ctx.fillText(newPlayer.defense +"DP",0, 65);
-       ctx.fillText(cleanedArray.length + "Enemies",0, 90);
-       ctx.fillText("Current Level" + newPlayer.level ,0, 115);
-       ctx.fillText(fps ,0, 140);
-
-
-
-
-      /*   ctx.font = "20px creepy";
-         ctx.fillStyle = "#6d0606";
-         ctx.fillText(newPlayer.health[1] + " / " + newPlayer.health[0] + "HP" ,wrapperX, wrapperY + 15);
-         ctx.fillText(newPlayer.attack + "AP",wrapperX, wrapperY + 40);
-         ctx.fillText(newPlayer.defense +"DP",wrapperX, wrapperY + 65);
-         ctx.fillText(cleanedArray.length + "Enemies",wrapperX, wrapperY + 90);
-         ctx.fillText("Current Level" + newPlayer.level ,wrapperX, wrapperY + 115);
-         ctx.fillText(fps ,wrapperX, wrapperY + 140);
-        */
-
-
-         newWrapper.scrollTop = Math.round(newPlayer.locationY - newWrapper.offsetHeight /2);  //round to smooth movement?
-         newWrapper.scrollLeft = Math.round(newPlayer.locationX - newWrapper.offsetWidth / 2);
-
+         //overwrite states
+         newEnemy  = cleanedArray
+         newObject = cleanedItem
+         canvasPlayer = newPlayer
+         newGraveArray = graveArrayCopy
+         lastUpdate = currentTime
 
   };
 
@@ -313,73 +268,49 @@ class Game extends React.Component {
       } else {
         playerCopy.direction = playerPosition.direction
       }
-
         canvasPlayer.direction = playerCopy.direction
-
-
-
   };
 
-  onClick = (e) => {    //handle direction from button press
-    canvasPlayer.direction = e.target.id
-  //  let playerCopy = JSON.parse(JSON.stringify(canvasPlayer))
-  //  playerCopy.direction = e.target.id
-  //  canvasPlayer = playerCopy
+  onClick = (direction) => {    //handle direction from button press
+    canvasPlayer.direction = direction
   };
+
+
 
   render() {
-     let {enemyArray, playerPosition, canvasDimension, dungeonArray, graveArray, objectArray, radius} = this.state
+     let {canvasDimension, radius, playerState} = this.state
      let {dungeonFloorArray, dungeonLavaArray, dungeonWallArray} = this.props
-       let wrapper = document.getElementById("wrapper"),   // this wrapper is what gets moved around
-           newWrapper = document.getElementById("divCanvas"),
+    //   let wrapper = document.getElementById("wrapper"),   // this wrapper is what gets moved around
+      let  newWrapper = document.getElementById("divCanvas"),
           viewport = {},
           gameState = null                       //game state is dynamically rendered
-       if (enemyArray.length === 0 && playerPosition.health[0] !==0){     // all enemies dead - array is zero - you have won
+       if (playerState === 'won'){     // all enemies dead - array is zero - you have won
           clearInterval(this.interval); //not sure this is the bext place for it
        gameState = (
             <Won />
          )
-       } else if (playerPosition.health[0] === 0){             // health at zero. you have lost
+       } else if (playerState === 'lost'){             // health at zero. you have lost
          clearInterval(this.interval);
          gameState = (
            <Lost />
          )
        } else {
-          //otherwise game still going
-                                                     if (wrapper !== null) { //gets generated after first call
-           viewport.width = wrapper.offsetWidth
-           viewport.height = wrapper.offsetHeight
-           wrapper.scrollTop = Math.round(playerPosition.locationY - viewport.height /2);  //round to smooth movement?
-           wrapper.scrollLeft = Math.round(playerPosition.locationX - viewport.width / 2);
-           divCanvas.scrollTop = Math.round(playerPosition.locationY - viewport.height /2);  //round to smooth movement?
-           divCanvas.scrollLeft = Math.round(playerPosition.locationX - viewport.width / 2);
-         }
-
-         let wrapperX = wrapper === null ? 0 : wrapper.scrollLeft
-         let wrapperY = wrapper === null ? 0 : wrapper.scrollTop
-
          gameState =   (
            <div>
            <div id="divCanvas" className="wrapper">
            <div id="canvasContainer">
              <canvas id="canvasBackground" width="1920" height="1920" />
              <canvas id="canvasForeground" width="1920" height="1920" />
-             <canvas id="canvasHUD" width="300" height="300" />
-             </div>
+          </div>
            </div>
-              <div>
-               <button onClick={this.onClick} id="walkUp">UP</button>
-               <button onClick={this.onClick} id="walkDown">DOWN</button>
-               <button onClick={this.onClick} id="walkLeft">LEFT</button>
-               <button onClick={this.onClick} id="walkRight">RIGHT</button>
-              </div>
+          <Buttons buttonPress={this.onClick} />
           </div>
          )
        }
 
        // h6's are temporary, removed buttons as never going to be quick on movile, need to be a bit more polished
       return (
-       <div   >
+       <div id="game">
             {gameState}
       </div>
 
@@ -485,7 +416,7 @@ componentDidMount = () => {  ///THIS IS NOT DRY,,, UGH
        )}
 
     return(
-      <div>
+      <div id="appDiv">
         <GameTitle />
           {toRender}
       </div>

@@ -1,7 +1,4 @@
-import React from "react"
-import ReactDOM from "react-dom"
-
-const dungeonCanvas = ({dungeonArray, dungeonFloorArray, dungeonLavaArray, dungeonWallArray,canvasDimension}) =>{
+const dungeonCanvas = ({dungeonArray, dungeonFloorArray, dungeonLavaArray, dungeonWallArray,canvasDimension}) =>{  //DRAW DUNGEON
   let canvas = document.createElement('canvas');
       canvas.width = canvasDimension.width
       canvas.height = canvasDimension.height

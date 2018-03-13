@@ -10,7 +10,7 @@ Win/ loss screen (very basic)
 added HUD
 improved comments
 character select
-stopped using setstate and konva-react for components. Speed up of around 200%
+stopped using setstate and konva-react for components. Speed up from 0.1 fps to 50 fps
 
 
 TODO -
