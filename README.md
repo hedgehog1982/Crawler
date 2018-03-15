@@ -11,13 +11,12 @@ added HUD
 improved comments
 character select
 stopped using setstate and konva-react for components. Speed up from 0.1 fps to 50 fps
+Pinned HUD to top left.
 
 
 TODO -
 A more polished GameTitle
 A more polished End screens
-Better character select screen
-
 
 
 Pictures Available for non-commercial use

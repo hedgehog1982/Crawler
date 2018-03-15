@@ -3,6 +3,8 @@
     src: url('creepy.ttf');
 }
 
+
+
 html,
 body,
 #app {
@@ -17,14 +19,23 @@ body,
   flex-direction: column;
 }
 
-#appDiv > div {
 
-}
-
-#game {
+#game, #playerSelectScreen {
   display : flex;
   flex-direction: column;
   flex-grow: 1;
+}
+
+.playerPic {
+  display : flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  flex-grow: 1;
+}
+
+img {
+  display: block;
+  margin: auto;
 }
 
 #game > div{
@@ -44,6 +55,7 @@ body,
 button{
   min-height: 90%;
   width : 20vw;
+  font-family : Creepy;
 }
 
 button:focus{
@@ -55,7 +67,6 @@ button:focus{
 #bottomRow{
   align-self : center;
   display : flex;
-
   flex-grow : 1;
 }
 
@@ -131,7 +142,7 @@ h1{
   display: flex;
   justify-content: center;
   color : #6d0606;
-  font-family: Times, serif;
+  font-family: Creepy;
 }
 
 h2{

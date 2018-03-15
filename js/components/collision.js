@@ -1,5 +1,3 @@
-let lastUpdate;  //why global?
-
 let updatePos = (personArray, person, timeDiff) => {
  let position = personArray[person]
  let pixelsWalked = 0;  //if no update in times dont walk
@@ -7,7 +5,6 @@ let updatePos = (personArray, person, timeDiff) => {
 
  let newLocationX = position.locationX
  let newLocationY = position.locationY
-
 
 //work out direction and subtract or add
  if (position.direction === 'walkLeft'){
@@ -38,7 +35,7 @@ let updatePos = (personArray, person, timeDiff) => {
 };
 
 
-let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {  //function to check if within dungeon still
+const withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {  //function to check if within dungeon still
   let inDungeon = true
   if (newX < 0 ){
     return false
@@ -57,7 +54,7 @@ let withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {  //function to 
 }
 };
 
-randomDirection = (newDirection) => {   //4 in 30 chance of changing direction ( roughly every 0.5 seconds)
+const randomDirection = (newDirection) => {   //4 in 30 chance of changing direction ( roughly every 0.5 seconds)
   let randomNum = random(0,30)
   if (randomNum === 0 ){
     newDirection = "walkLeft"
@@ -71,7 +68,7 @@ randomDirection = (newDirection) => {   //4 in 30 chance of changing direction (
   return(newDirection)
 };
 
-touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person, otherPlayers) => {
+const touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person, otherPlayers) => {
   let collision = false;
   for (let i = 0; i < otherPlayers.length ; i++){  //check whold of arrayDiff except current person
 
@@ -105,7 +102,7 @@ touchingOthers = (newLocationX, newLocationY, spriteWidth, spriteHeight, person,
   return (collision)
 };
 
-let touchingItems = (player, items) => {  //if touching a power up add that to the stats
+const touchingItems = (player, items) => {  //if touching a power up add that to the stats
 
   let direction = player.direction
 
@@ -152,3 +149,11 @@ return (cleanedArray)
     //clean array of zero values
 
 };
+
+module.exports = {
+    touchingItems : touchingItems,
+    touchingOthers : touchingOthers,
+    randomDirection : randomDirection,
+    withinDungeon : withinDungeon,
+    updatePos : updatePos
+}

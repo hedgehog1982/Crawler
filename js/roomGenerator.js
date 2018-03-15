@@ -1,6 +1,5 @@
 ////////////////////////////// need to remove these global variables!!!!!!!!!!!!!!!!//////////////////////////////
 
-
 let canvasArray = [];  //want to access it everywhere. this is for fast collision detection for dungeon floors.
 let tileArray =[]; // this is for the dungeon to be displayed and is a list of what tiles are being used
 let tileSize = 32

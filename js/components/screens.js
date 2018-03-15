@@ -61,9 +61,13 @@ class PlayerSelect extends React.Component {
     return(
       <div id="playerSelectScreen">
           <h1> PLEASE SELECT PLAYER</h1>
-          <div className={"playerPic"}>
-            <img onClick={this.handleClick} id="finn" src="./imgs/finncrop.jpg" />
-            <img onClick={this.handleClick} id="jake" src="./imgs/JakeGrowlingcrop.jpg" />
+          <div className={"playerPic"}>  
+            <div>
+              <img onClick={this.handleClick} id="finn" src="./imgs/finncrop.jpg" />
+            </div>
+            <div>
+              <img onClick={this.handleClick} id="jake" src="./imgs/JakeGrowlingcrop.jpg" />
+            </div>
 
 
           </div>

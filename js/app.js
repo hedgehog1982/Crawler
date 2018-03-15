@@ -1,23 +1,25 @@
 import React from "react"
 import ReactDOM from "react-dom"
-import {drawSprite, healthBar} from "./components/player.js"  //react component that handles player and enemy sprites
+import {drawSprite, healthBar, genEnemyArray} from "./components/player.js"  //react component that handles player and enemy sprites and generation
 import {dungeonCanvas} from "./components/dungeon.js" // react component that hand dungeon images (Lava, floor and Wall)
-import {itemsCanvas} from "./components/items.js"  //render items to canvas
+import {itemsCanvas, genObjectArray} from "./components/items.js"  //render items to canvas, generate items
 import {Won, Lost, LoadScreen, PlayerSelect} from "./components/screens.js" // react component for win / loss / loading screen
 import {GameTitle, Buttons,  preDrawShroud, HUDCanvas} from "./components/onScreen.js" //react component - title screen , HUD and shroud
+import {touchingItems, touchingOthers, randomDirection, withinDungeon, updatePos} from "./components/collision.js" //for collision detection of players, enemies and items
 
 //canvas caches to speed up rendering (well thats the theory)
 let cachedDungeon,  // cached dungeon canvas to speed up render
-  //  cachedItemCanvas = document.createElement('canvas'), //cached items canva
-     cachedHUDCanvas = document.createElement('canvas'),  //cached HUD
-  //  cachedSpriteCanvas = document.createElement('canvas'), //cached sprites
+    cachedHUDCanvas = document.createElement('canvas'),  //cached HUD
     cachedShroud = preDrawShroud(),
     cachedHealthBar = healthBar({width : 40, height : 10})
 
-let newEnemy   //enemy array for new rendering
-let newObject //new object array
-let canvasPlayer //player
-let newGraveArray = []  //graves
+let newEnemy,   //enemy array for new rendering
+    newObject, //new object array
+    canvasPlayer, //player
+    newGraveArray = []  //graves
+
+let lastUpdate;  //when we last ran updates on movement
+
 
 let frameNum = 0
 let globalID //for request animationFrame
@@ -138,7 +140,7 @@ class Game extends React.Component {
            //draw Items
            itemsCanvas({ctx, itemImages : this.props.itemArray, itemList : newObject , canvasDimension : this.state.canvasDimension})
 
-           //draw sprite
+           //draw sprites
            drawSprite({   ctx,
                            cleanedArray : newEnemy,
                            newPlayer : canvasPlayer ,
@@ -155,8 +157,18 @@ class Game extends React.Component {
 
            ctx.restore();
 
-           //draw HUD on top
-           ctx.drawImage(cachedHUDCanvas, Math.round(canvasPlayer.locationX - (newWrapper.offsetWidth /2)) , Math.round(canvasPlayer.locationY - (newWrapper.offsetHeight /2)));  // draw cached items in one go from an offscreen canvas
+     //draw HUD on top
+
+           //ensure it stays top left when in the uppermost top or left of screeny
+           let HUDX = Math.round(canvasPlayer.locationX - (newWrapper.offsetWidth /2)) < 0 ? 0 : Math.round(canvasPlayer.locationX - (newWrapper.offsetWidth /2))
+           let HUDY = Math.round(canvasPlayer.locationY - (newWrapper.offsetHeight /2)) < 0 ? 0 : Math.round(canvasPlayer.locationY - (newWrapper.offsetHeight /2))
+
+          //ensure it stays top left when in the uppermost bottom or right of screen
+           HUDX = newWrapper.scrollLeft == newWrapper.scrollWidth - newWrapper.offsetWidth ? newWrapper.scrollWidth - newWrapper.offsetWidth  : HUDX
+           HUDY = newWrapper.scrollTop == newWrapper.scrollHeight - newWrapper.offsetHeight ? newWrapper.scrollHeight - newWrapper.offsetHeight : HUDY
+
+           //draw the HUD
+           ctx.drawImage(cachedHUDCanvas, HUDX , HUDY);  // draw cached items in one go from an offscreen canvas
 
             // do this here after all rendering?
             globalID = requestAnimationFrame(this.updateAllPosition);
@@ -165,7 +177,7 @@ class Game extends React.Component {
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
     let fps = (Math.round(1000 /  (timeDiff)) + "FPS")
-    console.log(fps)
+    //console.log(fps)
 
   //make duplicate of arrays so not altering directly
     let  joinedArray = JSON.parse(JSON.stringify(newEnemy))
@@ -324,6 +336,17 @@ class App extends React.Component { //ready for cache
 
     this.selectAPlayer = this.selectAPlayer.bind(this);
 
+
+    //forcing download of text file
+    let canvas = document.createElement('canvas');
+        canvas.width = 200
+        canvas.height = 200
+    let ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0,300,300)
+            ctx.font = "20px creepy";
+            ctx.fillText("to get the ttf file all ready?!", 0 ,0)
+
+
     this.state = {
         loadedImages : 0,
         amountToLoad : 5,
@@ -338,7 +361,6 @@ class App extends React.Component { //ready for cache
   }
 
 componentDidMount = () => {  ///THIS IS NOT DRY,,, UGH
-
   let {dungeonFloorArray, dungeonWallArray, dungeonLavaArray, spriteArray, itemArray, loadedImages} = this.state
   let currentLoaded = 0
 

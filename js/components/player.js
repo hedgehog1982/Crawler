@@ -1,3 +1,51 @@
+import {touchingItems, touchingOthers, randomDirection, withinDungeon, updatePos} from "./collision.js" //for collision detection of players, enemies and items
+
+const genEnemyArray = ({dungeonArray, enemies, spriteArray, playerLocation, canvasDimension}) => {        //generate the enemies // sprite array 0 is player ignore that
+ let enemyArray = []
+ console.log("player location is ", playerLocation)
+
+for (let i=0; i< enemies; i++) { //generate all enemies
+
+  let inDungeon = false//temp, will add more
+  let X, Y
+  let selectedSprite = JSON.parse(JSON.stringify(cinn))  //so when we swap source its not duplicated (otherwise passed by ref)
+
+  let spriteType = (i % 2 === 0 ? 1 : 2) //spriteType 1 easy , 2 hard
+
+  selectedSprite.src = spriteArray[(i % 2 === 0 ? 1 : 2)].src
+  selectedSprite.img = spriteType
+
+  do {        //pick a random co-ordinate  // need to make sure not near hero in future.
+     X = random(0, 1920)
+     Y = random(0, 1920)
+
+     let spriteWidth = selectedSprite.animation.walkUp[3]
+     let spriteHeight = selectedSprite.animation.walkUp[2]
+
+    inDungeon = withinDungeon (X, Y, spriteWidth, spriteHeight)
+
+  } while (inDungeon === false ||
+      !( X < playerLocation.X -200 || X > playerLocation.X + 200)
+      || !(Y < playerLocation.Y -200 || Y > playerLocation.Y + 200 ))     //check wether in dungeon or near player
+
+  enemyArray.push({
+    name : i,  //keep array number to track it easier later on
+    locationX : Math.round(X),   //round numbers to stop sub pixel movement
+    locationY : Math.round(Y),
+    direction : "walkLeft",
+    sprite : selectedSprite,
+    health : spriteType === 1 ? [100 , 100] : [150 , 150],   //maximum health , current health
+    attack : spriteType === 1 ? 15: 25,
+    defense : spriteType === 1 ? 13: 20
+  })
+
+}
+//console.log(enemyArray)
+return(enemyArray)
+};
+
+
+
 const drawSprite = ({ ctx, cleanedArray, newPlayer, cachedHealthBar, spriteArray, animation, keyFrame, canvasDimension}) => {   //not useful?
 
       let Yoffset = 20
@@ -58,5 +106,6 @@ const healthBar = ({width, height}) =>{
 
 module.exports = {
   drawSprite : drawSprite,
-  healthBar : healthBar
+  healthBar : healthBar,
+  genEnemyArray
 }
