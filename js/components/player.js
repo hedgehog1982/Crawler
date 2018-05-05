@@ -61,30 +61,49 @@ const drawSprite = ({ ctx, cleanedArray, newPlayer, cachedHealthBar, spriteArray
                 locationY = Math.round(enemy.locationY),
                 xWithOffset = Math.round(locationX - ((40 - sWidth) /2))
 
-            //draw health bar
-            ctx.drawImage(cachedHealthBar, xWithOffset , locationY - Yoffset)
-            let rectangleFill = Math.floor(36 * (enemy.health[0] / enemy.health[1]))
-            ctx.fillStyle="green"
-            ctx.fillRect(xWithOffset + 2 , locationY - Yoffset + 2 , rectangleFill, 6)
 
-            //draw sprite
-            ctx.drawImage(spriteArray[enemy.sprite.img],
-                    sx, sy, sWidth, sHeight, locationX, locationY, sWidth, sHeight  );  // keep aspect ration
+            //only draw if within circle    
+            if (     locationX >  (newPlayer.locationX - 300) &&
+                      locationX < (newPlayer.locationX + 300) &&
+                      locationY > (newPlayer.locationY - 300) &&
+                      locationY < (newPlayer.locationY + 300)
+            ) {
+              //draw health bar
+              ctx.drawImage(cachedHealthBar, xWithOffset , locationY - Yoffset)
+              let rectangleFill = Math.floor(36 * (enemy.health[0] / enemy.health[1]))
+              ctx.fillStyle="green"
+              ctx.fillRect(xWithOffset + 2 , locationY - Yoffset + 2 , rectangleFill, 6)
 
+              //draw sprite
+              ctx.drawImage(spriteArray[enemy.sprite.img],
+                      sx, sy, sWidth, sHeight, locationX, locationY, sWidth, sHeight  );  // keep aspect ration
+
+            }
           })
         //draw hero // should be on top
 
-    let sx = animation[newPlayer.direction][keyFrame + 0],
-      sy = animation[newPlayer.direction][keyFrame + 1],
-      sWidth = animation[newPlayer.direction][keyFrame + 2],
-      sHeight = animation[newPlayer.direction][keyFrame + 3],
-      locationX = Math.round(newPlayer.locationX),
-      locationY = Math.round(newPlayer.locationY),
-      playerHealthBar =
+        let sx = animation[newPlayer.direction][keyFrame + 0],
+          sy = animation[newPlayer.direction][keyFrame + 1],
+          sWidth = animation[newPlayer.direction][keyFrame + 2],
+          sHeight = animation[newPlayer.direction][keyFrame + 3],
+          locationX = Math.round(newPlayer.locationX),
+          locationY = Math.round(newPlayer.locationY),
+          healthBarWidth = animation["walkRight"][2] + 6,  // fix the width to the widest sprite point, saves it wobbling
+          xWithOffset = Math.floor(locationX - ((healthBarWidth  - animation[newPlayer.direction][2]) /2)) // fix to one key frame
 
-      ctx.drawImage(cachedHealthBar, locationX, locationY - Yoffset)
-      ctx.drawImage(spriteArray[newPlayer.sprite.img],
-        sx, sy, sWidth, sHeight, locationX, locationY, sWidth, sHeight  );  // keep aspect ration
+          ctx.fillStyle="black"         //draw health bar outlines
+          ctx.fillRect(xWithOffset  ,locationY - Yoffset - 1 ,healthBarWidth ,10)
+
+          ctx.fillStyle="white"  //draw health bar white center
+          ctx.fillRect(xWithOffset + 2 ,locationY - Yoffset ,healthBarWidth  -4 , 10 - 4)
+
+          ctx.fillStyle="green"  //draw actual health
+          let rectangleFill = Math.floor(( healthBarWidth  -4) * (newPlayer.health[0] / newPlayer.health[1]))
+          ctx.fillRect(xWithOffset + 2 ,locationY - Yoffset ,rectangleFill, 10 - 4)
+
+
+          ctx.drawImage(spriteArray[newPlayer.sprite.img],
+            sx, sy, sWidth, sHeight, locationX, locationY, sWidth, sHeight  );  // keep aspect ration
 
         //  return canvas
 }
@@ -99,7 +118,7 @@ const healthBar = ({width, height}) =>{
       ctx.fillStyle="white"
       ctx.fillRect(2,2,width - 4,height - 4)
       return healthBar
-};
+    };
 
 
 

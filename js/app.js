@@ -20,7 +20,6 @@ let newEnemy,   //enemy array for new rendering
 
 let lastUpdate;  //when we last ran updates on movement
 
-
 let frameNum = 0
 let globalID //for request animationFrame
 
@@ -92,7 +91,6 @@ class Game extends React.Component {
   }
 
  componentDidMount = () => {  //update positions  50 times a second
-      //this.interval = setInterval(this.updateAllPosition, 20);  //update positions at 50fps (unlikely to happen at this speed)  //
       globalID = requestAnimationFrame(this.updateAllPosition);
       this.interval = setInterval(this.keyFrame, 250)
 
@@ -117,25 +115,30 @@ class Game extends React.Component {
 
   updateAllPosition = () => {
     let newWrapper = document.getElementById("divCanvas")
-    let wrapperX = newWrapper === null ? 0 : newWrapper.scrollLeft
-    let wrapperY = newWrapper === null ? 0 : newWrapper.scrollTop
-    newWrapper.scrollTop = Math.round(canvasPlayer.locationY - newWrapper.offsetHeight /2);  //round to smooth movement?
-    newWrapper.scrollLeft = Math.round(canvasPlayer.locationX - newWrapper.offsetWidth / 2);
+  //  let wrapperX = newWrapper === null ? 0 : newWrapper.scrollLeft
+  //  let wrapperY = newWrapper === null ? 0 : newWrapper.scrollTop
+    newWrapper.scrollTop = Math.floor(canvasPlayer.locationY - newWrapper.offsetHeight /2);  //round to smooth movement?
+    newWrapper.scrollLeft = Math.floor(canvasPlayer.locationX - newWrapper.offsetWidth / 2);
 
           let  can = document.getElementById("canvasForeground");
           let  ctx = can.getContext("2d")
 
-           //fill canvas black and cut out a rectangle where the player is
-           ctx.fillStyle="black"
-           ctx.fillRect(0,0,1920,1920)
+           //fill canvas black
 
-           //new method for quick shroud?
-           ctx.save();
-           ctx.beginPath();
-           ctx.arc(Math.round(canvasPlayer.locationX), Math.round(canvasPlayer.locationY), 250, 0, Math.PI*2, true);
-           ctx.closePath();
-           ctx.clip();
+           //new method for quicker shroud // circle path
+           if (shroud === true) {
+             ctx.fillStyle="black"
+             ctx.fillRect(0,0,1920,1920)
+             ctx.save();
+             ctx.beginPath();
+             ctx.arc(Math.round(canvasPlayer.locationX), Math.round(canvasPlayer.locationY), 250, 0, Math.PI*2, true);
+             ctx.closePath();
+             ctx.clip();
+           //clear a clear rect the size of my shroud circle
            ctx.clearRect(Math.round(canvasPlayer.locationX - 250),Math.round(canvasPlayer.locationY -250),500,500)
+         } else {
+           ctx.clearRect(0,0,1920,1920)
+         }
 
            //draw Items
            itemsCanvas({ctx, itemImages : this.props.itemArray, itemList : newObject , canvasDimension : this.state.canvasDimension})
@@ -150,12 +153,9 @@ class Game extends React.Component {
                            keyFrame : frameNum * 4,
                            canvasDimension : this.state.canvasDimension});
 
-         // draw shroud, 2 circles.
-            if (shroud === true){
-            ctx.drawImage(cachedShroud, -1000 + canvasPlayer.locationX, -1000 + canvasPlayer.locationY);
-          }
 
-           ctx.restore();
+            //cut out the above path, leave the rest black
+            if (shroud === true) {ctx.restore();}
 
      //draw HUD on top
 
@@ -170,14 +170,15 @@ class Game extends React.Component {
            //draw the HUD
            ctx.drawImage(cachedHUDCanvas, HUDX , HUDY);  // draw cached items in one go from an offscreen canvas
 
-            // do this here after all rendering?
-            globalID = requestAnimationFrame(this.updateAllPosition);
+           // do this here after all rendering?
+
+
 
     //get new positions
     let currentTime = new Date().getTime();
     let timeDiff = currentTime - lastUpdate;
     let fps = (Math.round(1000 /  (timeDiff)) + "FPS")
-    //console.log(fps)
+    console.log(fps)
 
   //make duplicate of arrays so not altering directly
     let  joinedArray = JSON.parse(JSON.stringify(newEnemy))
@@ -264,6 +265,20 @@ class Game extends React.Component {
          newGraveArray = graveArrayCopy
          lastUpdate = currentTime
 
+         globalID = requestAnimationFrame(this.updateAllPosition)
+
+         //check for win / loss condition
+         if (cleanedArray.length === 0 ){
+           this.setState({ playerState: "won"})
+           cancelAnimationFrame(globalID);
+         } else if (newPlayer.health[0] === 0 ){  //check for win
+            this.setState({ playerState: "lost"})
+            cancelAnimationFrame(globalID);
+         }
+
+
+
+
   };
 
   handleKeyPress = (event) => {  //handle direction from key press
@@ -297,12 +312,10 @@ class Game extends React.Component {
           viewport = {},
           gameState = null                       //game state is dynamically rendered
        if (playerState === 'won'){     // all enemies dead - array is zero - you have won
-          clearInterval(this.interval); //not sure this is the bext place for it
        gameState = (
             <Won />
          )
        } else if (playerState === 'lost'){             // health at zero. you have lost
-         clearInterval(this.interval);
          gameState = (
            <Lost />
          )

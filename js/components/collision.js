@@ -40,8 +40,8 @@ const withinDungeon = (newX, newY, spriteWidth, spriteHeight) => {  //function t
   if (newX < 0 ){
     return false
   } else {
-    for (let i = newX; i < newX + spriteWidth; i++ ){ // for width of sprite
-      for(let j= newY; j < newY + spriteHeight; j++){ //for height of sprite
+    for (let i = newX; i < newX + spriteWidth; i += 3 ){ // for width of sprite        ? do I need to do this for every pixel? going to go with no
+      for(let j= newY; j < newY + spriteHeight; j += 3){ //for height of sprite
         if (canvasArray[i] !== undefined && canvasArray[i][j] !== 1){
           inDungeon = false;
           break;
